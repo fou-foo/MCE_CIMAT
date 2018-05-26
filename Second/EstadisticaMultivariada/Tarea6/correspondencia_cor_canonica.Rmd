@@ -1,0 +1,310 @@
+---
+title: "Estadística Multivariada. Tarea6"
+author: "José Antonio García Ramirez"
+date: "Mayo 17 de 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Ejercicio 1:
+
+*El conjunto de datos __mundodes__ representa 91 países en los que se han observado 6 variables, Razón de natalidad, Razón de mortalidad, mortalidad infantil, esperanza de vida en hombres, esperanza de vida en mujeres y PNB per cápita. Del conjunto de datos se ha tomado la esperanza de vida de hombres y de mujeres. Se han formadó cuatro categorías tanto para la mujer como para el hombre. Se denotan por $M1$ y $H1$ a las esperanzas entre menos de 41 años a 50 años, $M2$ y $H2$, de 51 a 60 años, $M3$ y $H3$, de 61 a 70 años, y $M4$ y $H4$, para entre 71 a más de 80 respectivamente.*
+
+*La siguiente tabla de contingencia muestra las frecuencias de cada grupo:*
+
+
+
+| no. personas | $H1$ | $H2$ | $H3$ | $H4$ |
+|:-------------|:----:|:----:|:----:|:----:|
+| $M1$         |   10 |    0 |     0|    0 |
+| $M2$         | 7    | 12   | 0    |  0   |
+| $M3$         | 0    | 5    | 15   | 0    | 
+| $M4$         | 0    | 0    | 23   | 19   |
+
+*Realiza proyecciones por filas, por columnas y conjuntas de filas y columnas. Comprobar que en la proyección por filas las categorías están claramente separadas y que en el caso del hombre, las dos últimas categorías están muy cercanas. Comprobar en la proyección conjunta la cercanía de las categorías $H3$ con $M3$ y $M4$.*
+
+
+
+```{r tabla1, echo=FALSE , fig.height=4, fig.width=6}
+#La parte aburrida pero necesaria: recolectar los datos, una tabla feliz
+M1 <- matrix( c(10, 0, 0,0,
+                7, 12, 0, 0,
+                0, 5, 15, 0,
+                0, 0, 23, 19) , byrow = TRUE, ncol = 4)
+#asignamos nombres a las col. y reg, de la tabla feliz
+row.names(M1) <- paste0(rep('M',4), 1:4)
+colnames(M1) <- paste0(rep('H',4), 1:4)
+#Por unica ocación hagamos el calculo explicito: sigo el texto de Jhnson porque
+#su deducción me parece más relacionada al tema de analisis de correspondencia 
+# y menos 'parecido' a PCA
+sum.c <- apply(M1, 2,  sum)
+sum.r <- apply(M1, 1,  sum)
+D.c <- diag(sum.c)
+D.r <- diag(sum.r)
+############## calculo de raices de matrices simetricas
+D.c.eigen <- eigen(D.c) 
+D.c.sqrt <- D.c.eigen$vectors %*% diag((D.c.eigen$values)**(-.5)) %*%
+  t(D.c.eigen$vectors)
+D.r.eigen <- eigen(D.r) 
+D.r.sqrt <- D.r.eigen$vectors %*% diag((D.r.eigen$values)**(-.5)) %*%
+  t(D.r.eigen$vectors)
+#>>verificamos el calculo 
+  #D.r.sqrt%*%D.r.sqrt %*% D.r - diag(4)
+  #D.c.sqrt%*%D.c.sqrt %*% D.c - diag(4)
+#############  
+n <- sum(M1) #numero de observaciones en la muestra
+i <- length(sum.r)
+j <- length(sum.c)
+F <- M1 # matriz sin escalar 
+feliz <- D.r.sqrt%*%(F   )%*% D.c.sqrt# la matriz que permitira
+                              #proyectar con la unidad como solucion trivial
+feliz.svd <- svd(feliz) 
+#proyeccion de filas y columnas 
+filas.proyec <- D.r.sqrt%*%feliz.svd$u%*%diag(feliz.svd$d)
+columnas.proyec <- D.c.sqrt%*%feliz.svd$v%*%diag(feliz.svd$d)
+  #nos quedamos con las soluciones no triviales
+filas <- filas.proyec[,-1]
+columnas <- columnas.proyec[,-1]
+  #la inercia de la tabla proyectada en dos dimenciones:
+D.1 <- feliz.svd$d[2]/sum(feliz.svd$d[-1])
+D.2 <- feliz.svd$d[3]/sum(feliz.svd$d[-1])
+inercia <- sum(feliz.svd$d[2:length(feliz.svd$d)]) *n
+valor.critico <- qchisq(1-.95, i*j)  
+library(ggplot2)
+df.1 <- as.data.frame(filas[, 1:2])
+df.1$nombre <- row.names(M1)
+df.1$tipo <- 'fila'
+df.2 <- as.data.frame(columnas[, 1:2])
+df.2$nombre <- colnames(M1)
+df.2$tipo <- 'columna'
+df <- rbind(df.1, df.2)
+ggplot(data = df, aes(x=V1, y = V2)) +geom_point(aes(colour=tipo)) +
+  geom_text(aes(label=nombre, colour = tipo),hjust=0, vjust=0) +
+  ggtitle('Relación entre la esperanza de vida en hombres y mujeres') +  
+   theme_minimal() + theme(legend.position='none')+
+  ylab(paste0(as.character(round(D.2*100,1)), " %")) + 
+  xlab(paste0(as.character(round(D.1*100,1)), " %")) +
+  scale_color_manual(values =c('#41B6C4', '#DF65B0')) +
+  geom_vline(xintercept=0, linetype="dotted") +
+  geom_hline(yintercept=0, linetype="dotted")
+####el test 
+ifelse(inercia > valor.critico, 'Se rechaza H0', "se acepta H0")
+#verificamos
+#chisq.test(F)
+#library(ca)
+#corres <- ca(F, nd = 2, suprow = NA, supcol = NA,
+   #          subsetrow = NA, subsetcol = NA)
+#plot(corres)
+
+```
+
+Decidí codificar la proyección conjunta de las filas y las columnas, los resultados se muestran en la siguiente gráfica, donde es fácil apreciar que las categorías de mujeres en los diferentes de rangos estan separados en contrapunto de las categorías de edades de los hombres pues los puntos correspondientes a los rangos [51,60] y [61,70] años estan cercanos. Nótese tambien que no hay independencia entre las categorías de esperanza de vida entre hombres y mujeres pues pares de puntos estan cercanos H1 con M1, M2 con H2 y en particular H3 esta cercano a dos categorías M4 y M3 además de que M4 y H4 son los puntos más cercanos. La inercia de la tabla sobrepasa al 80% por lo que podemos considerar una interpretación adecuada, como notas adicionales reportamos que se realizó un test $\chi^2$ con significancia de 0.05 y se descarta la hipótesis de independencia entre las categorías a pesar de que el estadistico de prueba sobrepasa en gran medida el valor crítico es importante considerar que las entradas con varios ceros de la tabla pueden sugerir que los rangos de edad no son los apropiados.   
+
+# Ejercicio 2:
+
+*Una muestra de $n = 1,660$ personas se clasifica en forma cruzada según el estado de salud mental y la situación socioeconómica, la clasificación se presenta en la Tabla. Realizar un análisis de correspondencia de estos datos. Interpretar los resultados.*
+
+*¿Pueden las asociaciones de los datos estar bien representadas en una dimensión?*
+
+
+
+
+|                         |           Estatus  | socieconomico |       |    |    |
+|:------------------------|:------------------:|:-------------:|:-----:|:--:|:--:|
+| Estatus de salud mental |          A (alto)  | B             | C     | D  | E (bajo) |
+| Bien                    | 121                | 57            | 72    | 36 | 21       | 
+| Formación de síntomas leves | 188 | 105 | 141 | 97 | 71 | 
+| Formación de síntomas moderados | 112 | 65 | 77 | 54 | 54 |
+| Dañado | 86| 60 | 94 | 78 | 71 | 
+
+
+La proyección conjunta de las filas y las columnas en dos dimensiones se muestra en la siguiente gráfica, donde es fácil apreciar de manera particular que las categorías dos categorías de ingresos más altos (puntos \$1 y \$2) estan cercanas al igual que las dos categorías de ingresos más bajos (puntos \$4 y \$5) a diferencia de la categoría de ingreso medio que se distingue de las otras (recordemos que esta proyección está condicionada por las categorías de los estados mentales) y de manera análoga la categoría de salud con formación de síntomas moderados (punto Mental.3) se distingue de las otras tres. De manera general las categorías muestran relación pues los pares de puntos Mental.1 con \$1, Mental.2 con \$3, y Mental.4 con \$4 se encuentran cercanos por lo que podemos concluir (aunado a que el test de independencia con confianza de 95% verifica) que no existe relación de independencia entre las variables. 
+
+```{r tabla2, echo=FALSE, fig.height=3.5}
+#es un copy paste del codigo del chunck anterior
+M1 <- matrix( c(121, 57, 72, 36, 21,
+                188, 105, 141, 97, 71, 
+                112, 65, 77, 54, 54, 
+                86, 60, 94, 78, 71) , byrow = TRUE, ncol = 5)
+#asignamos nombres a las col. y reg, de la tabla feliz
+row.names(M1) <- paste0(rep('Mental.',4), 1:4)
+colnames(M1) <- paste0(rep('$',5), 1:5)
+#Por unica ocación hagamos el calculo explicito: sigo el texto de Jhnson porque
+#su deducción me parece más relacionada al tema de analisis de correspondencia 
+# y menos 'parecido' a PCA
+sum.c <- apply(M1, 2,  sum)
+sum.r <- apply(M1, 1,  sum)
+D.c <- diag(sum.c)
+D.r <- diag(sum.r)
+############## calculo de raices de matrices simetricas
+D.c.eigen <- eigen(D.c) 
+D.c.sqrt <- D.c.eigen$vectors %*% diag((D.c.eigen$values)**(-.5)) %*%
+  t(D.c.eigen$vectors)
+D.r.eigen <- eigen(D.r) 
+D.r.sqrt <- D.r.eigen$vectors %*% diag((D.r.eigen$values)**(-.5)) %*%
+  t(D.r.eigen$vectors)
+n <- sum(M1) #numero de observaciones en la muestra
+i <- length(sum.r)
+j <- length(sum.c)
+F <- M1 # matriz sin escalar 
+feliz <- D.r.sqrt%*%(F   )%*% D.c.sqrt# la matriz que permitira
+                              #proyectar con la unidad como solucion trivial
+feliz.svd <- svd(feliz) 
+#proyeccion de filas y columnas 
+filas.proyec <- D.r.sqrt%*%feliz.svd$u%*%diag(feliz.svd$d)
+columnas.proyec <- D.c.sqrt%*%feliz.svd$v%*%diag(feliz.svd$d)
+  #nos quedamos con las soluciones no triviales
+filas <- filas.proyec[,-1]
+columnas <- columnas.proyec[,-1]
+  #la inercia de la tabla proyectada en dos dimenciones:
+D.1 <- feliz.svd$d[2]/sum(feliz.svd$d[-1])
+D.2 <- feliz.svd$d[3]/sum(feliz.svd$d[-1])
+inercia <- sum(feliz.svd$d[2:length(feliz.svd$d)]) *n
+valor.critico <- qchisq(1-.95, i*j)  
+library(ggplot2)
+df.1 <- as.data.frame(filas[, 1:2])
+df.1$nombre <- row.names(M1)
+df.1$tipo <- 'fila'
+df.2 <- as.data.frame(columnas[, 1:2])
+df.2$nombre <- colnames(M1)
+df.2$tipo <- 'columna'
+df <- rbind(df.1, df.2)
+p1 <- ggplot(data = df, aes(x=V1, y = V2)) +geom_point(aes(colour=tipo)) +
+  geom_text(aes(label=nombre, colour = tipo),hjust=0, vjust=0) +
+  ggtitle('Relación entre el estatus mental y el socieconomico') +  
+   theme_minimal() + theme(legend.position='none')+
+  ylab(paste0(as.character(round(D.2*100,1)), " %")) + 
+  xlab(paste0(as.character(round(D.1*100,1)), " %")) +
+  scale_color_manual(values =c('orange', 'purple')) +
+   geom_vline(xintercept=0, linetype="dotted") +
+  geom_hline(yintercept=0, linetype="dotted")
+p1
+####el test 
+ifelse(inercia > valor.critico, 'Se rechaza H0', "se acepta H0")
+#library(ca)
+#verificamos
+#chisq.test(F)
+#corres <- ca(F/n, nd = 2, suprow = NA, supcol = NA,
+ #            subsetrow = NA, subsetcol = NA)
+#plot(corres)
+```
+
+La inercia de la tabla sobrepasa el 95% por lo que podemos considerar una excelente interpretación en el espacio *fase* anterior. 
+
+Sin embargo la primer dimensión de la figura anterior contiene un 78% de la información de la tabla$^1$ por lo que es posible  representar la tabla en una dimensión la cual mostramos en la siguiente gráfica donde los mencionados patrones son más fáciles de identificar, concluimos este ejercicio haciendo notar la importancia del siguiente tema del curso el escalamiento multidimensional.
+
+```{r tabla3, echo=FALSE, fig.height=2}
+library(ggplot2)
+df.1 <- data.frame(V1 = filas[, 1])
+df.1$nombre <- row.names(M1)
+df.1$tipo <- 'fila'
+df.2 <- data.frame(V1 = columnas[, 1])
+df.2$nombre <- colnames(M1)
+df.2$tipo <- 'columna'
+df <- rbind(df.1, df.2)
+df$V2 <- 0
+p1 <- ggplot(data = df, aes(x=V1, y = V2)) +geom_point(aes(colour=tipo)) +
+  geom_text(aes(label=nombre, colour = tipo),hjust=0, vjust=0) +
+  ggtitle('Relación entre el estatus mental y el socieconomico') +  
+  theme_classic() + theme(legend.position='none', axis.title.y=element_blank(),
+                          axis.text.y=element_blank())+
+  xlab(paste0(as.character(round(D.1*100,1)), " %")) +
+  scale_color_manual(values =c('orange', 'purple')) + ylim(c(-.001,.001)) +ylab('') 
+p1 + coord_fixed(ratio = 1.5)
+```
+
+$^1$ En contraste de la implementación del package ca que otorga un  94% de información a la primera dimensión, atribuimos esta diferencia al método de estimación de los vectores propios y a la estructura de la tabla
+
+
+# Ejercicio 3
+
+Sobre el ejercicio visto en clase relativo a los datos de mediciones de cráneos y piernas de aves de corral. 
+
+\[
+R = \begin{pmatrix}
+    R_{11} &|&R_{12}\\ \hline 
+    R_{21} &|&R_{22}\\
+    \end{pmatrix}
+     = \begin{pmatrix}
+    1.0 & 0.505 & | &0.569 & 0.602\\
+    0.505 &1& |&.422 & .467\\ \hline
+    0.569 & 0.422 &|&1& 0.926\\
+    0.602 & 0.467 &|& 0.926 & 1.0
+    \end{pmatrix}
+\]
+
+
+Se tenían los pares canónicos, sin embargo en el script anexo los recalcule, al usar matrices de aproximación utilizando solo un par canónico las matrices de aproximación de $R_{11}$ y $R_{22}$ explican el 72% y 93% de la varianza muestral, como el estadistico de prueba para realizar el test de que la aproximación de rango menor requiere de conocer el número de muestra (que desconocemos en este caso) y crece linealmente con el podemos fijar n =1 (solo como una alejada aproximación ) y aun en este caso la aproximación de $R_{12}$ utilizando solo un par canónico no pasa el test.
+
+
+
+```{r echo = FALSE, warning=FALSE, message=FALSE}
+p <- 2
+q <- 2
+library(expm)#packages con funciones de matrices
+S11 <- matrix( c(1, .505, .505, 1), byrow = TRUE, ncol = p  )
+S12 <- matrix( c(.569, .602, .422, .467), byrow = TRUE, ncol = q  )
+S22 <- matrix( c(1, .926, .926, 1 ), byrow = TRUE, ncol = q  )
+#me voy por la segura sacar los valores propios más grandes 
+W <- ( sqrtm(solve(S22)) %*% t(S12) %*% solve(S11) %*% S12%*%sqrtm(solve(S22))  )
+prop <- eigen(W)
+valores <- prop$values
+correlaciones.canonicas <- valores**.5
+i <- 1
+var_expl <- sum(prop$values[i])/sum(prop$values) #cuantos se requeirem -> i 
+#var_expl #var acumulada deL PRIMER PAR canonico
+f <- prop$vectors #los f_i
+V <- ( sqrtm(solve(S22))%*%f )#coeficientes del segundo grupo POR COLUMNAS
+#################checar a mano tener solo combinaciones lineales '+'
+###solo por didactica (y porque es facil) obtengamos los e_i de la manera larga
+W <- ( sqrtm(solve(S11)) %*% (S12) %*% solve(S22) %*% t(S12)%*%sqrtm(solve(S11))  )
+prop <- eigen(W)
+e <- prop$vectors
+U <- sqrtm(solve(S11)) %*%e  #por columnas 
+#################checar a mano tener solo combinaciones lineales '+'
+U <- -U
+########################################
+###### Correlaciones del los pares canonicos con el primer conjunto de variables 
+######NOTA: NOTAR EL TRASPUESTO => los resultados se leen por reglon 
+#t(U)%*% S11
+### correlaciones de los pares canonicos con el segundo conjunto 
+#t(V)%*% S22
+########### correlaciones del primer componente de los pares con el perimer grupo 
+#t(U)%*%S12
+#########correlciones de la segunda componente canonica con el segundo grupo de variables
+#t(V)%*%t(S12)
+####################aPROXIMACIONES usando ambos pares
+#sum(correlaciones.canonicas) #no podemos esperar mucho 
+A <- t(U) #para unificar notacion 
+A <- solve(A)
+B <- t(V)
+B <- solve(B)
+i <- 1:2 #pares canonicos a usar
+S11.aprox <-  S11 - (A[,i] %*% t(A[, i])) 
+S22.aprox <-  S22 - (B[,i] %*% t(B[, i])) 
+S12.aprox <-  S12 - (correlaciones.canonicas[i]* (A[,i] %*% t(B[, i]))) #con la primera, ATENCION CON EL INDICE DE correlacion del par acnonico
+propo.S11 <- sum(diag(S11 -S11.aprox))/sum(diag(S11))
+propo.S22 <- sum(diag(S11 -S22.aprox))/sum(diag(S22))
+n <- 45 ##supongamos un tamanio de muestra
+estadistico <- -n*log(prod(1-correlaciones.canonicas[i]**2))
+valor.critico <- pchisq(1-.05, p*q)
+#ifelse(estadistico > valor.critico, 'Rechaza H0', 'No se rechaza H0')
+```
+
+
+Utilizando ambos pares canónicos la aproximación de $R_{11}$ es la siguiente:
+
+```{r}
+(A[,i] %*% t(A[, i]))
+```
+
+Y la aproximación de $R_{22}$ es la siguiente:
+
+```{r}
+(B[,i] %*% t(B[, i]))
+```
+
+Las matrices anteriores explican el 99.9% en ambos casos de las varianzas muestrales de los grupos, pero aun acotando inferiormente el estadístico de prueba se rechaza el test para la hipótesis de que la aproximación con rango dos de $R_{12}$ es adecuada, como se anexa el cálculo en el script y vale cuando menos `r estadistico` (aun con una muestra de $n=1$) contra el valor crítico de `r valor.critico`

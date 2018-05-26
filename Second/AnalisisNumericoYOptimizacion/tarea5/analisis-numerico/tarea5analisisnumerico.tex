@@ -1,0 +1,1056 @@
+%\PassOptionsToPackage{spanish,english}{babel}
+
+\documentclass[paper=letter, fontsize=11pt]{scrartcl} 
+\usepackage[T1]{fontenc}		%Previene errores en el encoding
+\usepackage[utf8]{inputenc}		%para identificar acentos(encoding)
+\usepackage[spanish]{babel}		%cambiar idioma de las etiquetas
+\decimalpoint
+\usepackage{tcolorbox}  %para resaltar los statements de las respuestas
+\usepackage{float}
+\usepackage{amsmath,amsfonts,amsthm} % Math packages
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage[unicode=true,pdfusetitle,
+            bookmarks=true,bookmarksnumbered=false,bookmarksopen=false,
+            breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]{hyperref}
+\usepackage{breakurl}
+\usepackage{geometry}
+
+						%para que se vea bonito el codigo 
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{pictex}  
+\usepackage{multimedia}
+\usepackage{listings}
+\usepackage{xcolor,colortbl}
+\usepackage[spanish]{babel} % language/hyphenation
+\usepackage{amsbsy}
+\usepackage{amssymb}
+\usepackage{fancyvrb}
+\usepackage{sectsty} % Allows customizing section commands
+\allsectionsfont{\centering \normalfont\scshape} % Make all sections centered, the default font and small caps
+
+
+
+\usepackage{fancyhdr} % Custom headers and footers
+\pagestyle{fancyplain} % Makes all pages in the document conform to the custom headers and footers
+\fancyhead{} % No page header - if you want one, create it in the same way as the footers below
+\fancyfoot[L]{} % Empty left footer
+\fancyfoot[C]{} % Empty center footer
+\fancyfoot[R]{\thepage} % Page numbering for right footer
+\renewcommand{\headrulewidth}{0pt} % Remove header underlines
+\renewcommand{\footrulewidth}{0pt} % Remove footer underlines
+\setlength{\headheight}{13.6pt} % Customize the height of the header
+
+\numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs - comment this line for an assignment with lots of text
+
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}} % Create horizontal rule command with 1 argument of height
+
+
+ \geometry{
+ a4paper,
+ total={175mm,265mm},
+ left=15mm,
+ top=15mm,
+ }
+\usepackage{tikz} %paras poner circulitos dentro de matrices
+\usepackage{tikz-cd}
+\newcommand\Circle[1]{%
+  \tikz[baseline=(char.base)]\node[circle,draw,inner sep=2pt] (char) {#1};}
+
+
+
+  
+ 
+\newenvironment{cframed}[1][blue]
+  {\begin{tcolorbox}[colframe=#1,colback=white]}
+  {\end{tcolorbox}}
+
+
+\title{	
+\normalfont \huge 
+\textsc{Análisis numérico} 
+\\ [25pt] 
+\horrule{0.5pt} \\[0.4cm] % Thin top horizontal rule
+\normalsize Tarea 5 \\ 
+\horrule{0.5pt} \\[0.5cm] % Thick bottom horizontal rule
+}
+\author{J. Antonio García, jose.ramirez@cimat.mx} % Your name
+
+\date{\normalsize\today} % Today's date or a custom date
+
+\begin{document}
+\lstdefinestyle{customc}{
+  belowcaptionskip=1\baselineskip,
+  basicstyle=\footnotesize, 
+  frame=lrtb,
+  breaklines=true,
+  %frame=L,
+  %xleftmargin=\parindent,
+  language=C,
+  showstringspaces=false,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\bfseries\color{green!40!black},
+  commentstyle=\itshape\color{red!40!black},
+  identifierstyle=\color{blue},
+  stringstyle=\color{purple},
+}
+
+\lstset{breakatwhitespace=true,
+  basicstyle=\footnotesize, 
+  commentstyle=\color{green},
+  keywordstyle=\color{blue},
+  stringstyle=\color{purple},
+  language=C++,
+  columns=fullflexible,
+  keepspaces=true,
+  breaklines=true,
+  tabsize=3, 
+  showstringspaces=false,
+  extendedchars=true}
+
+\lstset{ %
+  language=R,    
+  basicstyle=\footnotesize, 
+  numbers=left,             
+  numberstyle=\tiny\color{gray}, 
+  stepnumber=1,              
+  numbersep=5pt,             
+  backgroundcolor=\color{white},
+  showspaces=false,             
+  showstringspaces=false,       
+  showtabs=false,               
+  frame=single,                 
+  rulecolor=\color{black},      
+  tabsize=2,                  
+  captionpos=b,               
+  breaklines=true,            
+  breakatwhitespace=false,    
+  title=\lstname,             
+  keywordstyle=\color{blue},  
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},   
+  morekeywords={\%*\%,...}         
+} 
+\maketitle % Print the title
+
+
+\begin{enumerate}
+
+
+\begin{cframed}[violet]
+\item   ¿Cuántas soluciones tiene este sistema?\\
+\[
+\begin{split}
+2x-3y+z=2 \\
+4x-6y+2z=4\\
+6x-9y+3z=6\\
+\end{split}
+\]
+\end{cframed}
+Como podemos notar la segunda y la tercer ecuación son múltiplos de la primera por lo que el sistema es equivalente a resolver la primer ecuación, fijando $y$ y $z$ 
+Tenemos que :
+\[
+\begin{split}
+z = 2-2x+3y
+\end{split}
+\]
+Es decir que el sistema tiene una infinidad de soluciones.
+
+
+
+
+
+
+\begin{cframed}[teal]
+\item ¿Cuántas ecuaciones son necesarias para completar este sistema lineal con
+tres variables?
+\end{cframed}
+\[
+\begin{split}
+x+y+5z=3\\
+3x+4y+3z=9
+\end{split}
+\]
+Como las dos ecuaciones son linealmente independientes (es decir que una no es múltiplo de la otra) basta con agregar otra ecuación, propongo la siguiente ecuación.
+\[
+\begin{split}
+y-13z=1
+\end{split}
+\]
+
+Así la solución del sistema es $x=20, y=-12$ y $z=-1$
+
+
+
+
+\begin{cframed}[purple]
+
+\item ¿Cuántas ecuaciones son necesarias para completar este sistema de ecuaciones lineales con tres variables?
+\[
+\begin{split}
+2x-3y+z=2\\
+4x-6y+2z=4\\
+6x-9y+3z=6\\
+\end{split}
+\]
+\end{cframed}
+Como se menciono en el ejercicio uno este sistema es equivalente a solo la primera ecuación, por lo que al agregar otras dos ecuaciones (que sean linealmente independientes entre ellas y también con la primera) se tendrá un sistema de ecuaciones con solución única. Propongo las siguientes dos ecuaciones:
+\[
+\begin{split}
+y=1\\
+z=1\\
+\end{split}
+\]
+Así la solución del sistema es $x = 2,y=1$ y $z=1$
+
+
+\begin{cframed}[green]
+\item ¿Considera la siguiente matriz A, cual es la factorización LU que quisiéramos usar, mediante eliminación Gaussiana:\\
+
+Cuál será el pivote inicial si:\\
+
+\begin{enumerate}
+\item  No se usa un pivote inicial 
+\item Se usa un pivote parcial 
+\item Se usa un pivote completo 
+
+\end{enumerate}
+ \[
+ A =
+\begin{bmatrix}
+4 & -8 & 1\\
+6 & 5& 7\\
+0 & -10 &-3
+\end{bmatrix}
+\]
+\end{cframed}
+\begin{enumerate}
+\item Si no se emplea una estrategia de pivoteo y se procede con el método de Gauss, el primer pivote es la entrada $(1,1)$ es decir el número 4.
+\item Si empleamos la estrategia de pivoteo parcial sobre las columnas (intercambiando reglones) como estrategia de pivoteo \footnote{Como indica el texto que estamos siguiendo en esta sección del curso en la pág. 49} se elegiría como pivote inicial el elemento en la posición $(2,1)$ i.e. el 6, e intercambiaríamos el segundo reglón con el primero.
+\item Si empleamos la estrategia de pivoteo completo como estrategia de pivoteo se elegiría como pivote inicial el elemento en la posición $(3,2)$ i.e. el 10, e intercambiaríamos el tercer reglón con el primero y la segunda columna con la primera.
+\end{enumerate}
+\begin{cframed}[violet]
+\item   ¿Cuál es la factorización de Cholesky de la siguiente matriz?\\
+\[
+\begin{bmatrix}
+4 & 2\\
+2 & 2
+\end{bmatrix}
+\]
+\end{cframed}
+
+Sabemos que toda matriz simétrica y definida positiva tiene una descomposición de Cholesky. Es fácil ver que la matriz es simétrica, para ver si es definida positiva usare Gauss y si todos sus pivotes son positivos es equivalente a que sea definida positiva, además ya tendrá una descomposición LU que me permitirá dar la factorización de Cholesky $A = CC^t$
+\[
+A = \begin{bmatrix}
+\Circle{4} & 2\\
+2 & 2
+\end{bmatrix} \sim \begin{bmatrix}
+4 & 2\\
+0 & \Circle{1}\\
+\end{bmatrix} 
+\]
+Entonces 
+
+\[
+\begin{split}
+A = LU& = \begin{bmatrix}
+1 & 0\\
+1/2 & 1
+\end{bmatrix}  \begin{bmatrix}
+4 & 2\\
+0 & 1\\
+\end{bmatrix} =\begin{bmatrix}
+1 & 0\\
+1/2 & 1
+\end{bmatrix} \begin{bmatrix}
+4 & 0\\
+0 & 1
+\end{bmatrix}  
+\begin{bmatrix}
+1 & 1/2\\
+0 & 1
+\end{bmatrix} \\
+&=\left(
+\begin{bmatrix}
+1 & 0\\
+1/2 & 1
+\end{bmatrix} 
+\begin{bmatrix}
+2 & 0\\
+0 & 1
+\end{bmatrix}  \right)
+\left(\begin{bmatrix}
+2 & 0\\
+0 & 1
+\end{bmatrix}  
+\begin{bmatrix}
+1 & 1/2\\
+0 & 1
+\end{bmatrix}\right)\\
+& = 
+\begin{bmatrix}
+2 & 0\\
+1 & 1
+\end{bmatrix}
+\begin{bmatrix}
+2 & 1\\
+0 & 1
+\end{bmatrix}
+=CC^t
+\end{split}
+\]
+
+
+\begin{cframed}[teal]
+\item Sea: 
+\[
+A= \begin{bmatrix}
+1 & 1+ \epsilon \\
+1- \epsilon & 1
+\end{bmatrix}
+\]
+\begin{enumerate}
+\item ¿Cuál es el determinante de A? 
+\item En la aritmética de punto flotante, ¿para cual rango de valores de $\epsilon$ el valor del determinante debe ser cero? 
+\item  ¿Cuál es la factorización LU de A? 
+\item En la aritmética de punto flotante, ¿para cual rango de valores de $\epsilon$ el valor de U es singular? 
+
+
+\end{enumerate}
+\end{cframed}
+\begin{enumerate}
+\item \[
+det(A)= \begin{vmatrix}
+1 & 1+ \epsilon \\
+1- \epsilon & 1
+\end{vmatrix} = 1-(1+\epsilon)(1-\epsilon) = 1- (1-\epsilon^{2})=\epsilon^2 
+\]
+\item En teoría para cualquier número $\epsilon$ en el rango $[0,  {\epsilon_{esp}}]$ el determinante vale cero, donde $\epsilon_{esp}$ es el número más grande en la aritmética de punto flotante que satisface que $1+\epsilon_{esp}==1$, que en una arquitectura de 64bits, doble precisión según el acuerdo de la IEEE, es 
+$2.220446e-16$, pues si dejamos que la maquina haga el trabajo es decir el término $(1+\epsilon)(1-\epsilon)$ vale uno y el determinante vale cero.\\
+
+Pero en la práctica y sin considerar el resultado del inciso anterior (en este caso lo hice con R cuya forma de calcular determinantes es usar una descomposición LU), notamos que el resultado no es el adecuado debido a cancelaciones totales en el proceso de calculo y que el determinante es diferente de cero para valores $[0,  {\epsilon_{esp}}^2]$ es decir un intervalo d emenor longitud al anterior .
+
+
+\item Al utilizar ningun método de pivoteo tenemos que :
+\[
+A =  \begin{bmatrix}
+1 & 1+ \epsilon \\
+1- \epsilon & 1
+\end{bmatrix} \sim  \begin{bmatrix}
+				\Circle{1} & 1+ \epsilon   \\
+				 0 & \epsilon^2
+				\end{bmatrix}  
+\]
+Por lo que la descomposición LU de la matriz es
+\[
+LU =  \begin{bmatrix}
+1 & 0 \\
+1- \epsilon & 1
+\end{bmatrix}   \begin{bmatrix}
+				1 & 1+ \epsilon   \\
+				 0 & \epsilon^2
+				\end{bmatrix} =A 
+\]
+
+\item A diferencia del inciso b) sabemos que la multiplicación esta bien condicionada es decir que cualquier número $\epsilon$ mayor o igual al mínimo numero representable haría que $det(U)\ne0$, pero en la practica fue necesario (en el mismo ambiente de R que mencione en b) ) un $\epsilon = \epsilon_{min} + \epsilon_{esp}$\footnote{$\epsilon_{min}$ denota al menor numero positivo representable en la arítmetica de punto flotante.}
+
+
+\end{enumerate}
+
+\begin{cframed}[purple]
+\item 
+\begin{enumerate}
+\item ¿Cuál es la factorización LU de la siguiente matriz?
+\item ¿Bajo qué condiciones la matriz es singular?
+\end{enumerate}
+\end{cframed}
+\begin{enumerate}
+\item \[
+ \begin{bmatrix}
+\Circle{1} & a \\
+c & b
+\end{bmatrix}  \sim  \begin{bmatrix}
+				1 & a   \\
+				 0 & b-ac
+				\end{bmatrix} 
+\]
+Por lo que la descomposición LU de la matriz es
+\[
+LU =  \begin{bmatrix}
+1 & 0 \\
+c & 1
+\end{bmatrix}   \begin{bmatrix}
+				1 & a   \\
+				 0 & b-ac
+				\end{bmatrix} =A 
+\]
+
+\item Como el determinante de la matriz es $b-ac$, considero dos casos: el primero es que cualesquiera números mayores a $\epsilon_{esp}$ satisfagan la ecuación anterior (y se presenta la cancelación por la condición de la suma de flotantes aún cuando estos números sean aproximadamente iguales) y el segundo caso se da cuando tanto $b$ como el producto $ac$ valgan $\epsilon_{min}$.
+\end{enumerate}
+
+\begin{cframed}[green]
+\item Escribe la factorización LU de la siguiente matriz (muestra ambas matrices L y U explícitamente):
+\[
+\begin{bmatrix}
+1 & -1 & 0   \\
+-1 & 2  & -1\\
+0 & -1 & 1\\
+\end{bmatrix} = 
+\begin{bmatrix}
+\Circle{1} & -1 & 0   \\
+-1 & 2  & -1\\
+0 & -1 & 1\\
+\end{bmatrix}  \sim \begin{bmatrix}
+1 & -1 & 0   \\
+0 & \Circle{1}  & -1\\
+0 & -1 & 1\\
+\end{bmatrix} \sim
+\begin{bmatrix}
+1 & -1 & 0   \\
+0 & 1  & -1\\
+0 & 0 & 0\\
+\end{bmatrix} 
+\]
+\end{cframed}
+Por lo que la descomposición LU de la matriz es
+\[ LU = 
+\begin{bmatrix}
+1 & 0 & 0   \\
+-1 & 1  & 0\\
+0 & -1 & 1\\
+\end{bmatrix}   \begin{bmatrix}
+1 & -1 & 0   \\
+0 & 1  & -1\\
+0 & 0 & 0\\
+\end{bmatrix}  = \begin{bmatrix}
+1 & -1 & 0   \\
+-1 & 2  & -1\\
+0 & -1 & 1\\
+\end{bmatrix}
+\]
+
+\begin{cframed}[violet]
+\item Prueba que la matriz
+\[
+\begin{bmatrix}
+0 & 1   \\
+1 & 0\\
+\end{bmatrix}
+\]
+No tiene factorización LU, ej. No tiene una matriz triangular inferior L o triangular superior U , que den solución a A = LU.
+\end{cframed}
+Supongamos que tal descomposición existe, entonces:
+\[ LU = 
+\begin{bmatrix}
+1 & 0   \\
+l_1& 0\\
+\end{bmatrix}   \begin{bmatrix}
+u_1 & u_2   \\
+0 & u_3\\
+\end{bmatrix}  =
+\begin{bmatrix}
+0 & 1   \\
+1 & 0\\
+\end{bmatrix} =
+\begin{bmatrix}
+u_1 & u_2   \\
+l_1u_1 & l_1u_2+u_3\\
+\end{bmatrix} = \begin{bmatrix}
+0 & 1   \\
+1 & 0\\
+\end{bmatrix}
+\]
+De donde tenemos el siguiente sistema de ecuaciones lineales:
+\[
+\begin{split}
+u_1 = 0\\
+u_2 = 1\\
+l_1u_1 = 1\\
+l_1u_2 + u_3 = 0
+\end{split}
+\]
+
+El cual es inconsistente pues la primera ecuación y la tercera no se pueden cumplir simultáneamente.
+\begin{cframed}[teal]
+\item Clasifica cada una de las matrices siguientes como bien o mal condicionada:
+\begin{enumerate}
+\item \[ \begin{bmatrix}
+10^{10}& 0   \\
+0 & 10^{-10}\\
+\end{bmatrix}
+\]
+\item
+\[ \begin{bmatrix}
+10^{10}& 0   \\
+0 & 10^{10}\\
+\end{bmatrix}
+\]
+\item 
+\[ \begin{bmatrix}
+10^{-10}& 0   \\
+0 & 10^{-10}\\
+\end{bmatrix}
+\]
+\item \[ \begin{bmatrix}
+1 & 2   \\
+2 & 4\\
+\end{bmatrix}
+\]
+\end{enumerate}
+Para este ejercicio uso la métrica $||.||_2$.\\
+\end{cframed}
+\begin{enumerate}
+\item Para este caso podemos aprovechar el hecho de que la condición de una matriz esta dada por el cociente de la raíz cuadrada del valor propio más grande de la matriz $A^tA$ entre el menor valor propio \footnote{como dice el texto en la sección 4.5.2}, entonces calculo el valor de $cond(A)$:
+\[p_{A^tA}(\lambda) = 
+ \begin{bmatrix}
+10^{20}& 0   \\
+0 & 10^{-20}\\
+\end{bmatrix} -\lambda I  = (10^{20}-\lambda)(10^{-20}-\lambda) = \lambda^2 -\lambda(10^{20}+10^{-20}) +1 
+\]
+Cuya solución maxima se da en
+\begin{equation}
+\lambda_1 = \frac{(10^{20}+10^{-20}) + \sqrt{(10^{20}+10^{-20})^2-4}}{2}
+\end{equation}
+Y la mínima es 
+\begin{equation}
+\lambda_2 = \frac{(10^{20}+10^{-20}) - \sqrt{(10^{20}+10^{-20})^2-4}}{2}
+\end{equation}
+Denotemos de momento: $a = 10^{20}+10^{-20}$, entonces usando el resultado citado del libro que estamos siguiendo para esta sección del curso tenemos que:
+\[
+cond(A)= \frac{\sigma_{max}}{\sigma_{min}}
+\]
+Aplicandolo a nuestra matriz y aproximando $\sqrt{a^2-4} = a-\epsilon^*, \epsilon^*>0$ tenemos que 
+\[
+cond(A)= \frac{\sqrt{\lambda_1}}{\sqrt{\lambda_2}} = \sqrt{\frac{a+\sqrt{a^2-4}}{a-\sqrt{a^2-4}}}=\sqrt{\frac{2a-\epsilon^*}{\epsilon*}}
+\]
+
+En vista de lo anterior y como $\epsilon^*$ es demasiado pequeño $cond(A)>>1$ por lo que la matriz está mal condicionada. Y para trabajar con ella convendría un reescalamiento de sus entradas.
+
+
+
+
+\item Para este caso utilizo la propiedad de que $cond(I)=1$ y que $cond(\gamma A)=cond(A), \gamma \ne 0$, asi tomando:
+\[ A = \begin{bmatrix}
+10^{10} & 0   \\
+0 & 10^{10}\\
+\end{bmatrix} = 
+10^{10}\begin{bmatrix}
+1 & 0   \\
+0 & 1\\
+\end{bmatrix}
+\]
+Es claro que $con(A) = cond( 10^{10} I) =cond(I)=1$, por lo que esta matríz sí esta bien condicionada  
+\item Este caso es análogo al anterior:
+\[ A = \begin{bmatrix}
+10^{-10} & 0   \\
+0 & 10^{-10}\\
+\end{bmatrix} = 
+10^{-10}\begin{bmatrix}
+1 & 0   \\
+0 & 1\\
+\end{bmatrix}
+\]
+Es claro que $con(A) = cond( 10^{-10} I) =cond(I)=1$, por lo que está matríz también esta bien condicionada, pues $10^{-10}$ es un número pequeño pero no lo sufiente en comparación de $\epsilon_{esp}$  
+
+\item Notemos que esta matriz no posee inversa por lo cual esta mal condicionada. Pero exhibámoslo calculando sus valores singulares:
+\[p_{A^tA}(\lambda) = 
+ \begin{bmatrix}
+5& 10   \\
+10 & 20\\
+\end{bmatrix} -\lambda I  = (5-\lambda)(20-\lambda) = \lambda^2 -25\lambda= \lambda(\lambda-25) 
+\]
+Por lo que $cond(A) = 5/0$ es decir que la matriz esta mal condicionada.
+
+\end{enumerate}
+
+\begin{cframed}[purple]
+\item Especifica una eliminación matricial elemental que vuelve ceros los últimos dos componentes del vector
+\[
+\begin{bmatrix}
+ 3   \\
+ 2\\
+ -1 \\
+ 4\\
+\end{bmatrix}
+\]
+\end{cframed}
+La matriz elemental que propongo es la que suma al tercer reglón la mitad del segundo, y suma el inverso aditivo del doble del segundo reglón al cuarto.
+\[
+\begin{bmatrix}
+1 & 0& 0 & 0   \\
+0 & 1& 0& 0\\
+0 & 1/2 & 1 & 0 \\
+0& -2 & 0 & 1\\
+\end{bmatrix}
+\begin{bmatrix}
+ 3   \\
+ 2\\
+ -1 \\
+ 4\\
+\end{bmatrix} = \begin{bmatrix}
+ 3   \\
+ 2\\
+ 0 \\
+ 0\\
+\end{bmatrix}
+\]
+
+\begin{cframed}[green]
+\item Con una matriz singular y usando la aritmética exacta, ¿En qué punto el proceso de solución fracasa en resolver un sistema lineal por el método de Gauss?
+\begin{enumerate}
+\item ¿Con método de pivote parcial?
+\item ¿Sin pivote? 
+\end{enumerate}
+\end{cframed}
+\begin{enumerate}
+\item Usando aritmética exacta, es decir sin preocuparnos por la estabilidad numérica de la aritmética de punto flotante, el proceso de Gauss con pivoteo parcial nunca falla (considerando que desde la primera iteración se pivotea) pues si ha encontrado un cero en la k-ésima iteración ya se ha encontrado la descomposición $LU$
+\item Sin realizar ninguna técnica de pivoteo el proceso de Gauss para factorizar $LU$ falla al encontrar el primer cero, pues no se garantiza que encuentre la descomposición.
+\end{enumerate}
+
+\begin{cframed}[violet]
+\item Si A es una matriz mal condicionada, y su factorización LU es obtenida por eliminación Gaussiana con pivoteo parcial, ¿Esperarías que el mal condicionamiento se vea reflejado en L, U o en las dos?, ¿Por qué?
+\end{cframed}
+
+El mal condicionamiento se puede dar en ambas matrices, $L$ y $U$ consideremos el siguiente ejemplo, donde $M$ es un número en el extremo superior de la arítmetica de punto flotante y $\epsilon$ es un número en el extremo inferior del mismo sistema:
+\[
+A = \begin{bmatrix}
+\epsilon & 2\\
+2 & M
+\end{bmatrix} 
+\]
+Como vimos en el ejercicio 10.a) este tipo de matrices estan mal condicionadas. Construyamos su factorización $LU$ usando pivoteo parcial:
+\[
+A = \begin{bmatrix}
+\epsilon & 2\\
+2 & M
+\end{bmatrix} \sim
+\begin{bmatrix}
+  \Circle{2} & M\\
+\epsilon & 2
+\end{bmatrix} \sim 
+\begin{bmatrix}
+  2 & M\\
+0 & 2-M\epsilon/2
+\end{bmatrix}
+\]
+Por lo que 
+\[
+\begin{split}
+L = \begin{bmatrix}
+1 & 0\\
+\epsilon/2 & 1
+\end{bmatrix}\\
+U =\begin{bmatrix}
+  2 & M\\
+0 & 2-M\epsilon/2
+\end{bmatrix}
+\end{split}
+\]
+Donde podemos ver que una entrada de la matriz $L$ (la (2,1)) puede ser inclusive cero o diferente a lo que se espera con un $\epsilon$ suficientemente pequeño, por otro lado sabemos que la asociatividad no se cumple en la aritmética de punto flotante por lo que la entrada $(2,2)$ de la matriz $U$ puede también llegar a ser cero.
+
+
+
+
+
+
+\begin{cframed}[teal]
+\item 
+\begin{enumerate}
+¿Cuál es la inversa de la siguiente matriz?
+\[
+A = \begin{bmatrix}
+1 & 0& 0 & 0   \\
+0 & 1& 0& 0\\
+0 & m_1 & 1 & 0 \\
+0& m_2 & 0 & 1\\
+\end{bmatrix}
+\]
+
+
+
+\item ¿Cómo podría surgir tal matriz en la práctica computacional?
+\end{enumerate}
+\end{cframed}
+
+\begin{enumerate}
+\item 
+La inversa de la matriz anterior, si la denotamos por $A$ es: 
+\[
+A^{-1} = \begin{bmatrix}
+1 & 0& 0 & 0   \\
+0 & 1& 0& 0\\
+0 & -m_1 & 1 & 0 \\
+0& -m_2 & 0 & 1\\
+\end{bmatrix}
+\] 
+Así 
+\[
+AA^{-1} = \begin{bmatrix}
+1 & 0& 0 & 0   \\
+0 & 1& 0& 0\\
+0 & m_1 & 1 & 0 \\
+0& m_2 & 0 & 1\\
+\end{bmatrix} 
+\begin{bmatrix}
+1 & 0& 0 & 0   \\
+0 & 1& 0& 0\\
+0 & -m_1 & 1 & 0 \\
+0& -m_2 & 0 & 1\\
+\end{bmatrix}= \begin{bmatrix}
+1 & 0& 0 & 0   \\
+0 & 1& 0& 0\\
+0 & m_1 -m_1 & 1 & 0 \\
+0& m_2 - m_2& 0 & 1\\
+\end{bmatrix} = I_4
+\]
+
+\item  En la practica computacional una matriz de este tipo puede surgir al guardar los inversos aditivos de los pivotes divididos entre los coeficientes que continúan en la $k$-ésima iteración del método de Gauss para obtener una descomposición $LU$
+\end{enumerate}
+
+\begin{cframed}[purple]
+\item ¿Bajo qué condiciones la eliminación por método de Gauss es estable sin pivote?
+\end{cframed}
+Si la matriz es dominante diagonalmente, es decir 
+\[
+\sum_{i=1,i\ne j}^{n}|a_{ij}| < |a_{jj}|, \forall j \in \{1,2,\dots, n\}
+\]
+
+
+
+
+
+
+
+
+\begin{cframed}[green]
+\item ¿Qué pasa cuando la eliminación por método de Gauss con pivoteo parcial es usado en una matriz de la siguiente forma?
+\[
+\begin{bmatrix}
+1 & 0& 0 & 0 & 1   \\
+-1 & 1& 0& 0 & 1\\
+-1 & -1& 1& 0 & 1\\
+-1 & -1 & -1 & 1 & 1 \\
+-1 & -1 & -1 & -1 & 1\\
+\end{bmatrix}
+\]
+\end{cframed}
+\begin{enumerate}
+\item ¿Las entradas de la matriz transformada crecen?\\
+Sí, se obtiene la matriz 
+\[
+\begin{bmatrix}
+1 & 0& 0 & 0 & 1   \\
+0 & 1& 0& 0 & 2\\
+0 & 0& 1& 0 & 4\\
+0 & 0 & 0 & 1 & 8 \\
+ 0& 0 & 0 & 0 & 16\\
+\end{bmatrix}
+\]
+
+\item ¿Qué sucede si se usa pivoteo completo en su lugar? \\
+También crecen, pero no llegan a ser del mismo orden, se obtiene la siguiente matriz bidiagonal.
+\[
+\begin{bmatrix}
+1 & 1& 0 & 0 & 0   \\
+0 & 2& 1& 0 & 0\\
+0 & 0& -2& 1 & 0\\
+0 & 0 & 0 & -2 & 1 \\
+ 0& 0 & 0 & 0 & -2\\
+\end{bmatrix}
+\]
+
+\end{enumerate}
+
+
+
+
+
+
+
+
+\begin{cframed}[violet]
+\item 
+\begin{enumerate}
+\item Revisa si la siguiente matriz A es singular 
+\[ A = 
+\begin{bmatrix}
+0.7187 & -0.6899& 1.9023& 1.0767& 0.8129& 0.8129\\
+-0.6899& 2.4594& -0.7354& -3.3921& -1.9510& -1.9510\\
+1.9023& -0.7354& 17.1940& -0.0982& -0.1533& -0.1533\\
+1.0767& -3.3921& -0.0982& 6.0862& 3.9154& 3.9154\\
+0.8129& -1.9510& -0.1533& 3.9154& 3.2915& 3.2915\\
+0.8129& -1.9510& -0.1533& 3.9154& 3.2915& 3.2915\\
+\end{bmatrix}
+\]
+\item Encuentra su número de condición.
+\end{enumerate}
+\end{cframed}
+
+\begin{enumerate}
+\item  Claramente la matriz es singular pues el ultimo reglón es un múltiplo del penúltimo.
+\item Como la matriz es singular $cond(A)=\infty$
+\end{enumerate}
+
+
+
+\begin{cframed}[teal]
+\item Resuelve el siguiente sistema de ecuaciones lineales
+
+\begin{equation}
+A-BX_1-CX_2 =0
+\end{equation}
+\begin{equation}
+D-EX_1-FX_2 = 0
+\end{equation}
+Encuentre $X_1$ y $X_2$, donde 
+\[ A = 
+\begin{bmatrix}
+0.1661& -0.7405& -0.2007& 1.3287& 0.6678 &0.6678\\
+-0.1485& 0.8496& -0.0995& -0.7950& 0.2326& 0.2326\\
+0.3189& 0.0314& -2.6524& 2.6452 &2.6383 &2.6383\\
+0.2718& -1.7378& -0.5238& 2.0817 &0.0437 &0.0437\\
+0.2526& -1.6540& -1.0242& 2.4014 &0.5190 &0.5190\\
+0.2526& -1.6540& -1.0242& 2.4014 &0.5190 &0.5190\\
+\end{bmatrix}\\
+\]
+\[
+B = 
+\begin{bmatrix}
+0.8384& -0.6846& 2.2869& 1.2523& 1.1416& 1.1416\\
+-0.6846& 2.3913& -0.9707& -3.3963& -1.9776& -1.9776\\
+2.2869& -0.9707& 17.4975 &0.4213 &0.7501 &0.7501\\
+1.2523& -3.3963& 0.4213 &6.3418 &4.3902 &4.3902\\
+1.1416& -1.9776& 0.7501 &4.3902 &4.1688 &4.1688\\
+1.1416& -1.9776& 0.7501 &4.3902 &4.1688 &4.1688\\
+\end{bmatrix}
+\]
+\[
+C = 
+\begin{bmatrix}
+-0.5036& 0.9281& -1.2859& -1.5834& -1.1682& -1.1682\\
+0.3221& -0.7801& -0.8124& 2.1669& 1.2050& 1.2050\\
+-0.2185& 2.8579& -2.9601& -3.5656& -3.9186& -3.9186\\
+-0.3364& 1.3301& 1.8211& -2.7533& -0.7221& -0.7221\\
+-0.4131& 0.9941& 1.2832& -2.1597& -0.9175& -0.9175\\
+-0.4131& 0.9941& 1.2832 &-2.1597 &-0.9175& -0.9175\\
+\end{bmatrix}
+\]
+
+\[
+D = 
+\begin{bmatrix}
+-0.4637& 0.9239& -1.1799& -1.5260& -1.0623& -1.0623\\
+0.4139& -0.7067& -0.2614& 2.3138& 1.4988& 1.4988\\
+-0.3556& 3.1645& -2.2459& -3.7115& -4.1062& -4.1062\\
+-0.6598& 1.2885& 0.6825& -3.2324& -1.6260& -1.6260\\
+-0.5848& 0.9654& 0.6540 &-2.4152 &-1.4014& -1.4014\\
+-0.5848& 0.9654& 0.6540 &-2.4152 &-1.4014& -1.4014\\
+\end{bmatrix}
+\]
+
+\[
+E = 
+\begin{bmatrix}
+-0.5036& 0.3221& -0.2185& -0.3364& -0.4131& -0.4131\\
+0.9281& -0.7801& 2.8579& 1.3301& 0.9941& 0.9941\\
+-1.2859& -0.8124& -2.9601& 1.8211& 1.2832& 1.2832\\
+-1.5834& 2.1669& -3.5656& -2.7533& -2.1597& -2.1597\\
+-1.1682& 1.2050& -3.9186& -0.7221& -0.9175& -0.9175\\
+-1.1682& 1.2050& -3.9186& -0.7221& -0.9175& -0.9175\\
+\end{bmatrix}
+\]
+
+\[
+F = 
+\begin{bmatrix}
+0.7187& -0.6899& 1.9023& 1.0767& 0.8129 &0.8129\\
+-0.6899& 2.4594& -0.7354& -3.3921& -1.9510 &-1.9510\\
+1.9023& -0.7354& 17.1940& -0.0982& -0.1533& -0.1533\\
+1.0767& -3.3921& -0.0982& 6.0862& 3.9154 &3.9154\\
+0.8129& -1.9510& -0.1533& 3.9154& 3.2915 &3.2915\\
+0.8129& -1.9510& -0.1533& 3.9154& 3.2915 &3.2915\\
+\end{bmatrix}
+\]
+
+
+\end{cframed}
+\begin{enumerate}
+\item 
+Notemos que las matrices $A,B,C,D,E$ y $F$ son singulares pero podemos usar las inversas generalizadas para encontrar $X_1$ y $X_2$. Para ello utilice la implementación de la función $ginv()$ del package “MASS” que hace uso explicito de la función “svd()” del kernel base de R que a su vez utiliza las rutinas $DGESDD$ y $ZGESDD$ de LAPACK.
+
+Después de un poco de algebra tenemos, si denotamos a la inversa generalizada con el superíndice $\dag$ 
+
+De la ecuación (0.3) tenemos que 
+\[
+\begin{split}
+(A-CX_2) = BX_1 &\\
+& \Rightarrow B^{\dag}(A-CX_2)=X_1
+\end{split}
+\]
+Por otro lado de la ecuación (0.4) tenemos que 
+\[
+\begin{split}
+D-EX_1 = FX_2 &                                             \\
+              & \Rightarrow    D -EB^{\dag}(A-CX_2) = FX_2  \\
+              & \leftrightarrow     D -EB^{\dag}A +EB^{\dag}CX_2 =FX_2                              \\
+              & \leftrightarrow     D -EB^{\dag}A  = -EB^{\dag}CX_2   FX_2    \\
+      & \leftrightarrow     D -EB^{\dag}A  =    (F-EB^{\dag}C)X_2    \\        
+&\Rightarrow (F-EB^{\dag}C)^{\dag}(D -EB^{\dag}A) = X_2\\
+\end{split}
+\]
+Asi 
+\[ X_2 =
+\begin{bmatrix}
+7.1547 &19.8849  &48.3933 &-20.4827 &-7.8834 &-7.8834\\
+7.4192 &16.3068  &45.6387 &-15.1661 &-4.6329 &-4.6329\\
+-0.8159& -2.2855  &-6.0779 &  2.4385 & 0.8914 & 0.8914\\
+8.0412 &18.6928  &51.7481 &-18.4188 &-6.4656 &-6.4656\\
+-3.7844 &-9.9308 &-25.9964 & 10.1816 & 4.0418 & 4.0418\\
+-3.7844 &-9.9308& -25.9964 & 10.1816 & 4.0418  &4.0418\\
+\end{bmatrix}
+\]
+Y
+\[ X_1 =
+\begin{bmatrix}
+1.7065 & 1.9947&   6.7612& -1.5899& -0.1557 &-0.1557\\
+-2.1801& -1.9391&  -9.1816&  1.2096& -0.6546 &-0.6546\\
+-1.6697& -3.8811 &-10.7218&  3.9375 & 1.4677 & 1.4677\\
+-0.1653 & 2.4562  & 3.9767& -3.4619 &-2.4515 &-2.4515\\
+0.3623  &0.1735   &1.2187 & 0.1492  &0.3265  &0.3265\\
+0.3623  &0.1735   &1.2187 & 0.1492  &0.3265 & 0.3265\\
+\end{bmatrix}
+\]
+
+Incluyo el código R que utilicé para los calculos anteriores
+
+\begin{lstlisting}[style=customc,basicstyle=\scriptsize, language=R]
+a <- c(0.1661, -0.7405, -0.2007, 1.3287, 0.6678 ,0.6678,
+       -0.1485, 0.8496, -0.0995, -0.7950, 0.2326, 0.2326,
+       0.3189, 0.0314, -2.6524, 2.6452 ,2.6383 ,2.6383,
+       0.2718, -1.7378, -0.5238, 2.0817 ,0.0437 ,0.0437,
+       0.2526, -1.6540, -1.0242, 2.4014 ,0.5190 ,0.5190,
+       0.2526, -1.6540, -1.0242, 2.4014 ,0.5190 ,0.5190)
+a <- matrix(a, byrow = TRUE, ncol = 6)
+b <- c(0.8384, -0.6846, 2.2869, 1.2523, 1.1416, 1.1416,
+      -0.6846, 2.3913, -0.9707, -3.3963, -1.9776, -1.9776,
+      2.2869, -0.9707, 17.4975 ,0.4213 ,0.7501 ,0.7501,
+      1.2523, -3.3963, 0.4213 ,6.3418 ,4.3902 ,4.3902,
+      1.1416, -1.9776, 0.7501 ,4.3902 ,4.1688 ,4.1688,
+      1.1416, -1.9776, 0.7501 ,4.3902 ,4.1688 ,4.1688)
+b <- matrix(b, byrow = TRUE, ncol = 6)
+c <- c(-0.5036, 0.9281, -1.2859, -1.5834, -1.1682, -1.1682,
+       0.3221, -0.7801, -0.8124, 2.1669, 1.2050, 1.2050,
+       -0.2185, 2.8579, -2.9601, -3.5656, -3.9186, -3.9186,
+       -0.3364, 1.3301, 1.8211, -2.7533, -0.7221, -0.7221,
+       -0.4131, 0.9941, 1.2832, -2.1597, -0.9175, -0.9175,
+       -0.4131, 0.9941, 1.2832 ,-2.1597 ,-0.9175, -0.9175)
+c <- matrix(c, byrow = TRUE, ncol = 6)
+d <- c(-0.4637, 0.9239, -1.1799, -1.5260, -1.0623, -1.0623,
+       0.4139, -0.7067, -0.2614, 2.3138, 1.4988, 1.4988,
+       -0.3556, 3.1645, -2.2459, -3.7115, -4.1062, -4.1062,
+       -0.6598, 1.2885, 0.6825, -3.2324, -1.6260, -1.6260,
+       -0.5848, 0.9654, 0.6540 ,-2.4152 ,-1.4014, -1.4014,
+       -0.5848, 0.9654, 0.6540 ,-2.4152 ,-1.4014, -1.4014)
+d <- matrix(d, byrow = TRUE, ncol = 6)
+e <- c(-0.5036, 0.3221, -0.2185, -0.3364, -0.4131, -0.4131,
+       0.9281, -0.7801, 2.8579, 1.3301, 0.9941, 0.9941,
+       -1.2859, -0.8124, -2.9601, 1.8211, 1.2832, 1.2832,
+       -1.5834, 2.1669, -3.5656, -2.7533, -2.1597, -2.1597,
+       -1.1682, 1.2050, -3.9186, -0.7221, -0.9175, -0.9175,
+       -1.1682, 1.2050, -3.9186, -0.7221, -0.9175, -0.9175)
+e <- matrix(e, byrow = TRUE, ncol = 6)
+f <- c(0.7187, -0.6899, 1.9023, 1.0767, 0.8129 ,0.8129,
+       -0.6899, 2.4594, -0.7354, -3.3921, -1.9510 ,-1.9510,
+       1.9023, -0.7354, 17.1940, -0.0982, -0.1533, -0.1533,
+       1.0767, -3.3921, -0.0982, 6.0862, 3.9154 ,3.9154,
+       0.8129, -1.9510, -0.1533, 3.9154, 3.2915 ,3.2915,
+       0.8129, -1.9510, -0.1533, 3.9154, 3.2915 ,3.2915)
+f <- matrix(f, byrow = TRUE, ncol = 6)
+library(MASS)
+X2 <- ginv(f - e%*%ginv(b)%*%c ) %*% (d - e%*%ginv(b)%*%a)
+round(X2, 4)
+X1 <- ginv(b)%*%(a - c%*%X2)
+round(X1, 4)
+
+\end{lstlisting}  
+
+\item En la clase del lunes 26 de marzo se nos indicó que resolviéramos este mismo problema, pero abordándolo de la siguiente forma:
+
+Consideremos el sistema planteado por (0.3) y (0.4) de la siguiente forma:
+
+\[ HX = J \]
+Donde $H$, $X$ y $J$ son matrices particionadas de la siguiente forma:
+
+ 
+\[ H = 
+\begin{bmatrix}
+-B & -C \\
+-E & -F\\
+\end{bmatrix}
+\]
+\[ X = 
+\begin{bmatrix}
+X_1 \\
+X_2\\
+\end{bmatrix}
+\]
+\[ J = 
+\begin{bmatrix}
+-A \\
+-D\\
+\end{bmatrix}
+\]
+
+Entonces el sistema se puede resolver usando SVD sobre $H$ quedando como solución:
+\[
+\begin{split}
+HX & = J\\
+\leftrightarrow & (U_HD_HV^t_H)X = J\\
+\leftrightarrow & (D_HV^t_H)X = U_H^{-1}J=U_H^tJ\\
+\leftrightarrow & (V^t_H)X = U_H^{-1}J=D^{-1}U_H^tJ\\
+\leftrightarrow & X = U_H^{-1}J=(V^t)^{-1}D^{-1}U_H^tJ=VD^{-1}U_HJ\\
+\end{split}
+\]
+El detalle consiste en que $H$ sigue siendo singular para solucionar el problema “sumare ruido” a algunas entradas de $H$, justo los vectores reglón que son combinación lineal de otros ello con la finalidad de que la matriz deje de ser singular y que los valores propios de H no sean cero, de ello platicaré el lunes en mi exposición. El ruido que introduje proviene de una normal con media el promedio del vector l.i, y desviación estándar del reglón l.i. dividido entre el elemento maximo de $H$ incluyo el código a continuación:
+\begin{lstlisting}[style=customc,basicstyle=\scriptsize, language=R]
+H1 <- cbind(-b, -c)
+H2 <- cbind(-e, -f)
+H <- rbind(H1, H2)
+H[12, ] <- H[12, ] <- rnorm(12, mean(H[12, ]), sd(H[12, ]) )/(10*max(H))
+H[6, ] <- H[6, ] <- rnorm(12, mean(H[6, ]), sd(H[6, ]) )/(10*max(H))
+J <- rbind(-a, -d)
+svd <- svd(H)
+X <- svd$v%*%diag(1/svd$d)%*%t(svd$u)%*%J
+round(X, 4)
+\end{lstlisting}
+
+La solución obtenida por este método fue 
+\[ X =
+\begin{bmatrix}
+    1.7065&   1.9947  &  6.7612 & -1.5899  &-0.1557 & -0.1557\\
+   -2.1801 & -1.9391 &  -9.1816  & 1.2096  &-0.6546  &-0.6546\\
+   -1.6697 & -3.8811  &-10.7218  & 3.9375 &  1.4677  & 1.4677\\
+   -0.1653 &  2.4562  &  3.9767  &-3.4619  &-2.4515  &-2.4515\\
+ -197.7067 &-75.6951 &-711.6975 &-90.6666 &-32.5715 &-32.5715\\
+  198.4313 & 76.0421 & 714.1350 & 90.9649  &33.2245  &33.2245\\
+    7.1547 & 19.8849 &  48.3933 &-20.4827  &-7.8834  &-7.8834\\
+    7.4192 & 16.3068 &  45.6387 &-15.1661  &-4.6329  &-4.6329\\
+   -0.8159 & -2.2855 &  -6.0779  & 2.4385  & 0.8914  & 0.8914\\
+    8.0412 & 18.6928  & 51.7481 &-18.4188  &-6.4656  &-6.4656\\
+   14.1373 & 18.2773 &  87.1518 &-17.5430 &-13.1374 &-13.1374\\
+-21.7061 &-38.1388 &-139.1446  &37.9062&  21.2211 & 21.2211\\
+\end{bmatrix}
+\]
+El detalle en este punto es cuidar que la norma del vector que se agrega como ruido sea pequeña.
+
+\end{enumerate}
+
+\end{enumerate}
+
+
+\end{document}

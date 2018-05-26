@@ -1,0 +1,229 @@
+setwd('C:\\Users\\fou-f\\Desktop\\MCE\\Second\\CienciaDeDatos\\Tarea3') #nos cambiamos de ambiente
+###load and compile 
+library(Rcpp)
+library(RcppEigen)
+sourceCpp('KernelLDA.cpp')
+grid.lado <- 10
+################################
+FLDA <- function(train, test, Y.train, Y.test, mu = .001, sigma, search = TRUE)
+{
+  #Search : indica si se devuelve o no el vector de predicciones
+  l.train <- dim(train)[1]
+  l.1.train <- sum( Y.train == 1)
+  l.2.train <- sum( Y.train == -1)
+  #################################### a ver si centrando sale algo 
+  # train <- scale(train)
+  #################################### a ver si centrando sale algo 
+  W <- matrix( rep(0, l.train*l.train), ncol = l.train)
+  dimension <- dim(train)[2]
+  W <- Kernel(W, as.matrix(train), l.train , sigma, dimension )
+  #plot(image(W))
+  M.1 <- apply(W[, 1:l.1.train ], 1 ,sum, na.rm  = TRUE)
+  M.2 <- apply(W[, (l.1.train+1):l.2.train], 1 ,sum, na.rm  = TRUE)
+  M.1 <- M.1*(1/l.1.train)
+  M.2 <- M.2*(1/l.2.train)
+  M <- (M.1 - M.2)%*%t(M.1 - M.2)
+  #image(M)
+  ############ resolviendo (otro) generalized eigenvalue problem  
+  K.1 <- W[, 1:l.1.train]
+  K.2 <- W[, (l.1.train+1):l.train]
+  I.1 <- diag(rep(1, l.1.train))
+  L1 <- matrix( rep(1/l.1.train, l.1.train**2 ), ncol = l.1.train)
+  KK.1 <- K.1%*%(I.1-L1)%*%t(K.1) 
+  #
+  I.2 <- diag(rep(1, l.2.train))
+  L2 <- matrix( rep(1/l.2.train , l.2.train**2 ), ncol = l.2.train)
+  KK.2 <- K.2%*%(I.2-L2)%*%t(K.2)
+  ############
+  N <- KK.2 + KK.1
+  det(N)
+  ############## Forzando que N sea semidefinida positiva 
+  N <- (N + mu*(diag(rep(1,l.train)))) 
+  if(!is.finite(det(N)))
+  {
+    print(paste0('error en parametros mu: ', mu, ' sigma : ', sigma))
+    return(list(mu = mu, sigma = sigma, train = -1, test = -1))
+  }
+  A <- (solve(N)%*%M)
+  library(RSpectra)
+  A2 <- as(A, "sparseMatrix") #casteamos a clase 'sparseMatrix'
+  #isSymmetric(A2)
+  alphas <- eigs(A2, k=1, which = 'LM') #usamos lanczos
+  vectors <- alphas$vectors
+  alpha <- vectors[, 1]
+  alpha <- Re(alpha)
+  ###########evaluando train
+  y.hat.train <- W%*%alpha
+  y.hat.train <- (Re(y.hat.train))
+  #hist(y.hat.train)
+  c1 <- mean(y.hat.train[ Y.train==1 ] ) 
+  c2 <- mean(y.hat.train[ Y.train==-1] )
+  y.hat.train <- data.frame(y.hat.train = y.hat.train )
+  y.hat.train <- apply(y.hat.train, 1, function(x)
+  {
+    distancias <- c(Inf, Inf)
+    distancias[1] <- sum((x-c1)**2)
+    distancias[2] <- sum((x-c2)**2)
+    a <- which.min(distancias)
+    res <- ifelse(a == 1, 1, -1)
+  })
+  #table(y.hat.train, Yy.train)
+  #print('Train')
+  train.acc <- (sum(diag(table(y.hat.train, Y.train)))/l.train)#train con detalles
+  #evaluando el test 
+  #test <- scale(test)
+  l.test <- dim(test)[1]
+  l.1.test <- sum( y.test == 1)
+  l.2.test <- sum( y.test == -1)
+  #################################### 
+  W.test <- matrix( rep(0, l.test*(l.train)), ncol = l.train) 
+  W.test <- KernelTest(W.test, as.matrix(test), as.matrix(train),  l.test,
+                       l.train, sigma, dimension)
+  
+  #print(image(W.test))
+  y.hat.test <- W.test%*%alpha
+  #########
+  y.hat.test <- apply(y.hat.test, 1, function(x)
+  {
+    distancias <- c(Inf, Inf)
+    distancias[1] <- abs(x-c1)
+    distancias[2] <- abs(x-c2)
+    a <- which.min(distancias)
+    res <- ifelse(a == 1, 1, -1)
+  })
+  test.acc <- (sum(diag(table(y.hat.test, y.test)))/l.test)
+  #dos posibles salidas
+  if(search)
+  {
+    return(list(mu = mu, sigma = sigma, train = train.acc, test = test.acc ))
+  } else return(list(mu = mu, sigma = sigma, train = train.acc, test = test.acc, Y.hat =  y.hat.test))
+}
+################ preprocesamiento de PIMA
+t <- Sys.time() #medimos tiempos de ejecucion 
+#homologando el nombre y tipo y encoding d elas variables 
+train <- read.table('pima.tr', header = TRUE)
+test <- read.table('pima.te', header = TRUE)
+y.train <- train$type
+train$type <- NULL
+y.train[y.train == 0] <--1
+table(y.train)
+y.test <- test$type 
+levels(y.test) <- c(-1,1)
+table(y.test)
+test$type <- NULL
+columnas <- names(test) #columna numericas 
+###################################################
+############################################################
+# set.seed(0)
+# #####simulacion de datos parecidos a los del paper mencionado
+# #####son dos circunferencias con centro (.5,.5) y radios 1 y 4
+# #####se agrega en cada eje ruido ~ N(0,sigma=1/10 ) y N(0,1/10)
+# r <- 1 #radio
+# n <- 100 #la cuarta parte del numero de puntos que se van a generar
+# #se genera la primer circunferencia con ruido
+# x <- seq(-r, r, length=n)
+# y1 <- sqrt(r**2-x**2) + rnorm(n,0,r/10)
+# y2 <- -sqrt(r**2-x**2) - rnorm(n,0,r/10)
+# m.a1 <- data.frame(x=rep(x+.5, 2), y = c(y1+.5,y2+.5), clase=1)
+# #se genera la segunda circunferencia con ruido
+# r <- 4
+# x <- seq(-r, r, length=n)
+# y1 <- sqrt(r**2-x**2) + rnorm(n,0,r/40)
+# y2 <- -sqrt(r**2-x**2) - rnorm(n,0,r/40)
+# m.a2 <- data.frame(x=rep(x+.5, 2), y = c(y1+.5,y2+.5), clase=-1)
+# m.a <- rbind(m.a1, m.a2) #nuestro primer conjunto de prueba
+# m.a2 <- as.data.frame(scale(m.a[,1:2]) )
+# m.a[,1:2] <- m.a2
+# n.train <- sample( 1:dim(m.a)[1], round(.6*dim(m.a)[1]))
+# train <- m.a[n.train, ]
+# test <- m.a[-n.train, ]
+# y.train <- m.a$clase[n.train]
+# y.test <- m.a$clase[-n.train]
+############################# Busqueda de parametros coool
+mu.s <- seq(.001/10, 1, length = grid.lado)#despues de 7 se muere
+mu.s <- rep(mu.s, each = grid.lado)
+sigma.s <- seq(0.000005/10, 70, length=grid.lado )#creo que mas de 70 se rompe
+sigma.s <- rep(sigma.s, grid.lado)
+grid <- data.frame(mu = mu.s, sigma = sigma.s)
+head(grid)
+tail(grid)
+search <- lapply( X = 1:dim(grid)[1],FUN  = function(x) {
+  mu <- grid$mu[x]
+  sigma <- grid$sigma[x]
+  resultados <- FLDA(train = train, test = test, Y.train = y.train,  Y.test = y.test, mu, sigma)
+  out <- unlist(resultados)
+  return((out))   } ) #esta evaluacion tarda 
+u <- matrix(unlist(search), byrow = TRUE, ncol = 4)
+colnames(u) <- c('mu', 'sigma', 'train', 'test')
+u <- as.data.frame(u)
+t <- Sys.time() -t
+t
+          # visualizacion de la busqueda de parametros 
+(y.hat.test <- FLDA(train = train, test = test, Y.train = y.train,  
+                   Y.test = y.test, mu = 3.53 , sigma = 14.94, search = FALSE ))
+sum(diag(table(y.test, y.hat.test$Y.hat)))/length(y.test)
+################ 
+library(ggplot2)
+p1 <- ggplot(u, aes(x=train, y = test, colour = mu ,size = sigma  )) +
+  geom_point(aes(alpha = 0.05)) + theme_minimal() + 
+  ggtitle('Busqueda de parámetros para FLDA en los datos PIMA') +
+  xlab('Accuracy train')+ylab('Accuracy test') + 
+  stat_function(fun = function(x){x}, colour = I('red'),
+                show.legend = FALSE)
+p1
+#visualizacion para obtener los parametros a partir de la grafica
+library(plotly)
+p <- plot_ly(
+  u, x = ~train, y = ~test,
+  # Hover text:
+  text = ~paste("mu: ", mu, '$<br>sigma:', sigma),
+  color = ~mu, size = ~sigma
+)
+p
+############## visualizacion de los resultados 
+pca <- princomp(test, cor=TRUE)
+foo <- pca$scores
+foo <- as.data.frame(foo)
+foo$Y <- y.test
+foo$y.hat <-   y.hat.test$Y.hat
+library(ggplot2)
+p2 <- ggplot(foo, aes(x=Comp.1, y = Comp.2, alpha=0.1,size = 0.5  )) +
+  geom_point(aes(color = factor(y.test) )) +
+  scale_color_manual(values =c('orange', 'purple')) +
+  theme_minimal() +
+  ggtitle('Clasificación inicial de muestra test del dataset :PIMA la muestra simulada') +
+  xlab('PC1')+ylab('PC2')+  theme(legend.position = 'none')  
+p2
+p3 <- ggplot(foo, aes(x=Comp.1, y = Comp.2, alpha = 0.1, size=0.5 )) +
+  geom_point(aes(color= factor(y.hat.test$Y.hat))) +
+  scale_color_manual(values =c( 'orange', 'purple')) +
+  theme_minimal() +
+  ggtitle('Submuestra de PIMA evaluda y clasificada por KLDA') +
+  xlab('PC1')+ylab('PC2')+  theme(legend.position = 'none')  
+p3
+sum(diag(table(foo$Y, foo$y.hat)))/length(foo$y.hat)
+library(ggpubr)
+library(GGally)
+plot(ggarrange(p2,p3, ncol = 2 )) ##ilustramos la diferencia
+t <- Sys.time() -t
+t
+library(MASS)
+############como nuestros datos ya estan listos es facil entrenar
+lda.model <- lda( factor(y.train)  ~ ., data = train )
+y.hat.lda <- predict(lda.model, test)$class
+(acc.lda <- sum(diag(table(y.test, y.hat.lda)))/length(y.hat.lda))
+p2 <- ggplot(foo, aes(x=Comp.1, y = Comp.2, alpha=0.1,size = 0.5  )) +
+  geom_point(aes(color = factor(y.test) )) +
+  scale_color_manual(values =c('orange', 'purple')) +
+  theme_minimal() +
+  ggtitle('Clasificación inicial de muestra test del dataset PIMA ') +
+  xlab('PC1')+ylab('PC2')+  theme(legend.position = 'none')  
+p2
+p3 <- ggplot(foo, aes(x=Comp.1, y = Comp.2, alpha = 0.1, size=0.5 )) +
+  geom_point(aes(color= factor(y.hat.lda))) +
+  scale_color_manual(values =c( 'orange', 'purple')) +
+  theme_minimal() +
+  ggtitle('Submuestra de PIMA evaluda y clasificada por LDA') +
+  xlab('PC1')+ylab('PC2')+  theme(legend.position = 'none')  
+p3
+ggarrange(p2,p3, ncol = 2 )

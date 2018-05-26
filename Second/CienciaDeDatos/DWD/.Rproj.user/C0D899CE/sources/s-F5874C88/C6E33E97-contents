@@ -1,0 +1,47 @@
+####################################
+#####    J. Antonio Garcia #########
+#####   jose.ramirez@cimat.mx ######
+####################################
+#########################################
+# Construccion de la primer ilustracion # 
+#########################################
+#generamos una muestra de dim 39 mormal multi
+library(MASS)
+n <- 20
+d <- 39
+set.seed(0)
+pos <- as.data.frame(mvrnorm(n = n, mu = rep(2.2, d), Sigma = diag(rep(1, d))))
+neg <- as.data.frame(mvrnorm(n = n, mu = rep(-2.2, d), Sigma = diag(rep(1, d))))
+stack <- rbind(pos,neg)
+pos.mean <- apply(pos, 2, mean)
+neg.mean <- apply(neg, 2, mean)
+w <- ginv(cov(stack)) %*% (neg.mean - pos.mean)
+#w[-c(1,7)] <- 0
+#w <- w /sum(w**2)**.5
+c <-  -.5*(t(pos.mean + neg.mean)%*% ginv(cov(stack)) %*% (pos.mean - neg.mean)) #resolvemos el vector que define la frontera de Bayes, que coincide con la de LDA
+c2 <- (ginv(cov(stack)) %*% ((pos.mean - neg.mean) %*% t((pos.mean - neg.mean))))
+X <- c%*%t((pos.mean - neg.mean))%*% ginv(c2)
+X <- t(X)
+sum(X**2)
+#X <- X /sum(X**2)**.5
+sum(w*X)
+closure <- function(y, X, w)
+{
+  X <- X
+  w <- w
+  function(y){ t(y)%*%(X)+.00000000000001}   
+}
+orto <- closure(X=X, w=w)
+Y <- optim(par=rep(1/d**2 ,d), fn = orto)
+Y <- Y$par
+pos.proyec.x <- as.matrix(pos) %*%X
+neg.proyec.x <- as.matrix(neg) %*%X
+pos.proyec.y <- as.matrix(pos) %*%w
+neg.proyec.y <- as.matrix(neg) %*%w
+pos.proyec <- as.data.frame(cbind(pos.proyec.x, pos.proyec.y))
+neg.proyec <- as.data.frame(cbind(neg.proyec.x, neg.proyec.y))
+pos.proyec$label <- '+'
+neg.proyec$label <- '-'
+proyec <- rbind(pos.proyec, neg.proyec)
+library(ggplot2)
+ggplot(data = proyec, aes(x = V1, y=V2, color = label)) + geom_point()

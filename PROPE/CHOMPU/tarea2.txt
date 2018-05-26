@@ -1,0 +1,67 @@
+/* J. Antonio García: fou-foo@hotmail.com*/
+El lenguaje C las siguientes palabras son reservadas: 
+
+1) auto: Define a las variables con ambiente local. Pero como el ciclo de vida de las variables es local por default en las variables es raro utilizarla.
+2) double: Especificador de tipo de dato flotante de doble precisión.
+3) int: Especificador de tipo de dato entero 
+4) struct: Especificador para declarar variables de tipo estructura que son tipos de datos compuestos. 
+5) break: Palabra para salir de un ciclo. 
+6) else: Complemento del condicional if, es la secuencia que se realiza en caso de no cumplirse la condición verdadera dentro del if. 
+7) long: Especificador del tipo de dato int para duplicar el rango de valores posibles. 
+8) switch: Especificador de selección logica multiple. 
+9) case: Especificador de los casos particulares de la sentencia switch. 
+10) enum: Tipo de dato númerico entero que puede tomar sus valores de una enumeración escrita en código duro (explicitamente)
+11) register: Especificador de almacenamiento de variables int, el valor se almacena en un registro del procesador en lugar de memoria RAM.
+12) typedef: Se utiliza para definir tipos de datos diferentes a los base. 
+13) char: Especificador de tipo cadena. 
+14) extern:  En el código indica que una variable se ha declarado en otro código (como en C se pueden compilar archivos diferentes esto es util cuando una variable se ha definido en otro archivo y se exporta).
+15) return: Detiene la ejecución y devuelve el contro. 
+16) union: Analogo a la palabra reservada struct pero el conjunto que define comparten posición de memoria.
+17) const: Especificador de variable, las variables const no puede cambiar de valor.
+18) float: Especificador de tipo de dato flotante.
+19) short: Especificador de int con menor tamaño con signo.
+20) unsigned: Especificador de dato númerico para valores positivos, el bit de signo lo utiliza para otorgar mayor rango de números.
+21) continue: Pasa el control al inicio del ciclo.
+22) for: Estructura de control, permite declarar variables, incrementarlas y realizar test lógicos. 
+23) signed: Especificador de tipo de dato númerico para especificar que el dato tiene signo.
+24) void: Especificador de tipo de dato para indicar que una función no regresa valores. 
+25) default: En la sentencia switch indica lo que se realizará en caso de no encontrar verdadera ninguna condición.  
+26) goto: Permite crear enlaces entre etiquetas del código, rompiendo la ejecución secuencial. 
+27) sizeof:  Sirve para conocer el tamaño de un objeto o dato.
+28) volatile:  Permite que una variable pueda ser alterada por un proceso en segundo plano.
+29) do: Complemento de la sentencia while para controlar ciclos.
+30) if: Sentencia para evaluar condicionales.
+31) static: Define variables que no alteran su valor más alla del ambito en el que se define.
+32) while:  Sentencia para construir ciclos con longitud no fija.
+
+Algunas implementaciones (antiguas) también reservan fortran y asmlas palabras const, signed and volatile son nuevas en el standard ANSI.
+
+El lenguaje C tiene los siguientes tipos de operadores:
+
+De asignación (=) 
+Aritmeticos (+, -, *, /, %)
+Relacionales (<,>,<=,>=,==,!=)
+Lógicos (&&,||,!)
+Operadores de bits
+ 	& bit a bit AND
+	| bit a bit inclusivo OR
+	^ bit a bit exclusivo OR
+	~ complemento a uno
+	<< corriento a la derecha
+	>> corriento a la izquierda
+
+Operador condicional: 
+	? :
+	Es un curioso operador ternario, es decir. Evalúa la condición antes del '?' y si es cierta realiza lo que este a la izquierda de ':' en otro caso lo que está a la izquierda.
+
+La función printf sirve para imprimir mensaje en la consola utilizando el flujo estandar de salida.
+En contrapunto scanf sirve para leer desde el flujo estandar 
+su declaración es la siguiente:
+ int scanf(char *format, ...)
+ Entre sus curiosidades esta que permite realizar el cast de tipos de datos y lectura con formato, por ejemplo hexadecimal.
+
+ En C existen los tipos de datos int (short, int, long y long long), los flotantes en dos precisiones debido al número de bits utilizados para representar a la mantisa del número de float (simple) y double (doble), y las cadenas (char).
+
+
+Referencia:
+	B.	Kernighan	y	D.	Ritchie,	The	C	Programming	Language,	Prentice	Hall,	1988	

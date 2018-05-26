@@ -1,0 +1,28 @@
+// José Antonio García Ramirez fou-foo@hotmail.com 
+Ejercicio 1
+Si p1 = 12358952, p2 =?
+    int i = 15;                                     //se declara una variable tipo int
+    int *p1, *p2;                                   //se declaran apuntadores tipo int
+    p1 = &i;                                        // Se asigna el espacio en memoria 12358952 la cual tiene el alias del nombre de nuestra variable 'p1'
+    p2 = p1 + 2;                                    // Se desplaza dos posiciones de tamaño sizeof(int) el apuntador 'p2'
+    printf ( "p1 = %ld \t p2 = %ld \n", p1, p2 ) ;  // se imprimen las direecciones en memoria de los apuntadores 
+
+Si la variable ‘p1’ tiene el valor 12358952 (refiriéndose a la posición en memoria física que ocupa la variable ‘p1’) entonces la variable ‘p2’ se le asigna el valor 12358952 + 2*x (en la penúltima línea del código) ya que ambos apuntadores son de tipo ‘int’ y donde la x indica el tamaño en bytes del tipo de dato ‘int’ de C. Por lo regular x vale 4 pero podría variar de una implementación de compilador a otra.
+
+
+
+
+
+//
+Ejercicio 2
+Si p1 = 12358952, p2 =?
+    double i = 15.0;                                 //se declara una variable tipo double
+    double *p1, *p2;                                 //se declaran apuntadores tipo double
+    p1 = &i;                                         // Se asigna el espacio en memoria 12358952 la cual tiene el alias del nombre de nuestra variable 'p1'
+    p2 = p1 + 2;                                     // Se desplaza dos posiciones de tamaño sizeof(float) el apuntador 'p2'
+    printf ( "p1 = %ld \t p2 = %ld \n", p1, p2 ) ;   // se imprimen las direecciones en memoria de los apuntadores 
+
+Si la variable ‘p1’ tiene el valor 12358952  entonces la variable ‘p2’ se le asigna el valor 12358952 + 2*f (en la penúltima línea del código) ya que ambos apuntadores son de tipo ‘double’ y donde la f indica el tamaño en bytes del tipo de dato ‘double’ de C. Por lo regular f vale 8.
+
+
+ 

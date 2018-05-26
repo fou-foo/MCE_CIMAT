@@ -1,0 +1,16 @@
+setwd('C:\\Users\\fou-f\\Desktop\\MCE\\Second\\CienciaDeDatos\\tarea1\\basecompleta')
+a <-dir()
+censo <- read.csv(a[1])
+library(dplyr)
+censo.select <- censo %>% select('ANAL10', 'SPRIM10', 'SEXC10', 'SEE10',
+                                 'SAGUAE10', 'PROM_OCC10', 'PISOTIE10', 'SREFRI10')
+data <- cor(censo.select)
+pca <- eigen(data)
+lambda <- round(pca$values[1],3)
+cumsum(pca$values)/sum(pca$values)
+x <- pca$vectors[,1]*(-1)
+x <- round((x/sqrt(sum(x**2)))/2,3)
+x <- data.frame(PrimerComponentePrincipal = x)
+rownames(x) <- colnames(data)
+round(x,3)
+colnames(data)[order(x$PrimerComponentePrincipal, decreasing = TRUE)]

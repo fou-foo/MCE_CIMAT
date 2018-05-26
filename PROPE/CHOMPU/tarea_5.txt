@@ -1,0 +1,112 @@
+/* José Antonio García Ramirez fou-foo@hotmail.com*/
+
+Ejercicio 1:
+
+Completa el siguiente código, explica que obtuviste al correrlo. 
+
+Después de completarlo el código queda como sigue:
+
+#define N 100
+int *applyFunction (int *arregloIn) {
+    int arregloOut[N];
+    int i;
+    for ( i=0; i<N; i++)
+        arregloOut[i] = arregloIn[i]*2;
+    return &arregloOut[0];
+}
+int main () {
+    int i, arreglo [N] = { 1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12,  13,  14,  15,  16,  17,  18,  19,  20,  21,  22,  23,  24,  25,  26,
+  27,  28,  29,  30,  31,  32,  33,  34,  35,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  46,  47,  48,  49,  50,  51,  52,
+  53,  54,  55,  56,  57,  58,  59,  60,  61,  62,  63,  64,  65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,
+  79,  80,  81,  82,  83,  84,  85,  86,  87,  88,  89,  90,  91,  92,  93,  94,  95,  96,  97,  98,  99, 100};
+    // Inicializa el arreglo con los valores que quieras
+
+    int *result = applyFunction(arreglo);
+    // Mostrar arreglo resultante
+    for (i = 0; i < N; i++)
+    {
+        printf("\tElemento %d del arreglo result: %d\t", *(arreglo+i),  *(result+i));
+        if(i % 2 == 0)
+            printf("\n");
+    }
+}
+
+Parte de la salida es lo siguiente:
+
+        Elemento 1 del arreglo result: 2
+        Elemento 2 del arreglo result: 1                Elemento 3 del arreglo result: 6
+        Elemento 4 del arreglo result: 8                Elemento 5 del arreglo result: 10
+        Elemento 6 del arreglo result: 12               Elemento 7 del arreglo result: 14
+        Elemento 8 del arreglo result: 127              Elemento 9 del arreglo result: 127
+        Elemento 10 del arreglo result: 20              Elemento 11 del arreglo result: 1
+        Elemento 12 del arreglo result: 0               Elemento 13 del arreglo result: 16777498
+        Elemento 14 del arreglo result: 28              Elemento 15 del arreglo result: 6950224
+        Elemento 16 del arreglo result: 32              Elemento 17 del arreglo result: 352321812
+        Elemento 18 del arreglo result: 6956864         Elemento 19 del arreglo result: 6956864
+        Elemento 20 del arreglo result: 2               Elemento 21 del arreglo result: 6956872
+        Elemento 22 del arreglo result: 44              Elemento 23 del arreglo result: 127
+        Elemento 24 del arreglo result: 16777264                Elemento 25 del arreglo result: 50
+        Elemento 26 del arreglo result: 52              Elemento 27 del arreglo result: -2
+        Elemento 28 del arreglo result: 6956864         Elemento 29 del arreglo result: 127
+        Elemento 30 del arreglo result: 60              Elemento 31 del arreglo result: -620756773
+        Elemento 32 del arreglo result: 0               Elemento 33 del arreglo result: 66
+  
+  El programa inicializa un arreglo de enteros de tamaño especificado por una macro.
+Después se llama a la función ‘applyFunction’ la cual crea en su ambiente un arreglo de tamaño N; aquí está el detalle pues este arreglo solo vive en este ambiente y después de que se termina la ejecución de la función ‘applyFunction’ no se puede garantizar que la memoria que ocupa la variable ‘arregloOut’ siga disponible y en uso, multiplica por dos el arreglo que se recibe y se regresa la dirección de memoria del arreglo, sin embargo se regresa la dirección de memoria de una variable local por ello cuando se imprimen los valores del vector ‘result’ solo algunos son correctos pues los que no lo son se debe a que ese espacio en memoria ya ha sido ocupado o por alguna razón se perdió su contenido.
+
+
+Ejercicio 2: 
+Modifica el código para que funcione como crees que debería de hacerlo.
+
+Solo se modifica la línea en la que se declara el arreglo ‘arregloOut’ el código queda así: 
+#define N 100
+int *applyFunction (int *arregloIn) {
+    int *arregloOut = (int *) malloc( sizeof(int) * N);
+    int i;
+    for ( i=0; i<N; i++)
+        arregloOut[i] = arregloIn[i]*2;
+    return &arregloOut[0];
+}
+int main () {
+    int i, arreglo [N] = { 1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12,  13,  14,  15,  16,  17,  18,  19,  20,  21,  22,  23,  24,  25,  26,
+  27,  28,  29,  30,  31,  32,  33,  34,  35,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  46,  47,  48,  49,  50,  51,  52,
+  53,  54,  55,  56,  57,  58,  59,  60,  61,  62,  63,  64,  65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,
+  79,  80,  81,  82,  83,  84,  85,  86,  87,  88,  89,  90,  91,  92,  93,  94,  95,  96,  97,  98,  99, 100};
+    // Inicializa el arreglo con los valores que quieras
+
+    int *result = applyFunction(arreglo);
+    // Mostrar arreglo resultante
+    for (i = 0; i < N; i++)
+    {
+        printf("\tElemento %d del arreglo result: %d\t", *(arreglo+i),  *(result+i));
+        if(i % 2 == 0)
+            printf("\n");
+    }
+}
+
+Una parte de la salida es:
+
+        Elemento 1 del arreglo result: 2
+        Elemento 2 del arreglo result: 4                Elemento 3 del arreglo result: 6
+        Elemento 4 del arreglo result: 8                Elemento 5 del arreglo result: 10
+        Elemento 6 del arreglo result: 12               Elemento 7 del arreglo result: 14
+        Elemento 8 del arreglo result: 16               Elemento 9 del arreglo result: 18
+        Elemento 10 del arreglo result: 20              Elemento 11 del arreglo result: 22
+        Elemento 12 del arreglo result: 24              Elemento 13 del arreglo result: 26
+        Elemento 14 del arreglo result: 28              Elemento 15 del arreglo result: 30
+        Elemento 16 del arreglo result: 32              Elemento 17 del arreglo result: 34
+        Elemento 18 del arreglo result: 36              Elemento 19 del arreglo result: 38
+        Elemento 20 del arreglo result: 40              Elemento 21 del arreglo result: 42
+        Elemento 22 del arreglo result: 44              Elemento 23 del arreglo result: 46
+        Elemento 24 del arreglo result: 48              Elemento 25 del arreglo result: 50
+        Elemento 26 del arreglo result: 52              Elemento 27 del arreglo result: 54
+        Elemento 28 del arreglo result: 56              Elemento 29 del arreglo result: 58
+        Elemento 30 del arreglo result: 60              Elemento 31 del arreglo result: 62
+        Elemento 32 del arreglo result: 64              Elemento 33 del arreglo result: 66
+
+El código funciona porque al reservar el espacio en memoria con el función ‘malloc’ esta no se libera hasta que se haga explícitamente, por lo que la referencia a la variable temporal es válida, al igual que en el inciso anterior, sin embargo la memoria reservada en esta ocasión no se utiliza y por ello mantiene los valores esperados.
+
+
+Ejercicio 7:
+
+La diferencia entre las funciones ‘malloc’ y ‘calloc’ son varias. La primera, ‘malloc’ reserva espacio en memoria para almacenar datos, esta memoria puede ser continua, y las celdas de memoria que reserva no son inicializadas es decir que contienen los valores de tiempo atrás. Por otro lado ‘calloc’ utiliza la implementación de ‘malloc’ para realizar la misma tarea (reservar espacio en memoria física) sin embargo ‘calloc’ sí inicializa las celdas que reserva de manera que todos los bits valgan cero. 

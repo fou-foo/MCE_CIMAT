@@ -1,0 +1,6 @@
+base
+xtable
+microbenchmark
+ggplot2
+plotly
+bindrcpp

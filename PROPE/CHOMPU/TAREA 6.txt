@@ -1,0 +1,9 @@
+1 Escribe una función que cambie las letras de una cadena de caracteres por la siguiente, es decir a->b->c->...->y->z->a
+
+2 Escribe una función tipo void que calcule el cuadrado de una matriz leída de archivo y otra función que escriba el resultado en consola y en un archivo "res.dat". Prueba con los siguientes archivos cua33.dat, cua55.dat, el primer renglon contiene 2 enteros indicando el tamaño de la matriz. 
+
+
+3 Escribe una función que regrese una cadena con los caracteres de la siguiente cadena "propedeutico cimat" ordenados de menor a mayor
+
+cua33.dat
+res_foo.dat

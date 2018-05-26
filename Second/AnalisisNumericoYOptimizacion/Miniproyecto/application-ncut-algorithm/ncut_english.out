@@ -1,0 +1,9 @@
+\BOOKMARK [1][-]{section.1}{Introduction and motivation}{}% 1
+\BOOKMARK [1][-]{section.2}{WORKFLOW}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{On the problem of segmenting images and the focus of Ncut}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Mathematical and computational aspects}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{Details of the implementation \(in particular in the R language\)}{section.2}% 5
+\BOOKMARK [1][-]{section.3}{Related jobs}{}% 6
+\BOOKMARK [1][-]{section.4}{Experiments and results}{}% 7
+\BOOKMARK [1][-]{section.5}{Conclusions}{}% 8
+\BOOKMARK [1][-]{section*.3}{References}{}% 9
