@@ -72,7 +72,7 @@ body <- dashboardBody(
               ))), hr(),
             fluidRow( 
               box( width = 12,   column(6, 
-                                        withMathJax(includeMarkdown("SVM.Rmd")) ),
+                                        includeHTML("SVM.html")) ,
                       column(6) 
                 )
             )
