@@ -4,7 +4,9 @@
 ####################################
 library(plotly)
 library(MASS)
-
+library(shiny)
+library(knitr)
+library(rmarkdown) 
 #########################################
 # Construccion del backend              # 
 #########################################
@@ -14,6 +16,13 @@ pos <- readRDS('pos2000.RDS')
 neg <- readRDS('neg2000.RDS')
 ####################################
 server <- function(input, output) {
+  #############################markdown de SVM y DWD
+  # output$SVM <- renderUI({  
+  #   rmarkdown::render(input = "SVM.Rmd",
+  #                     output_format = html_document(self_contained = TRUE),
+  #                     output_file = 'SVM.html')  
+  #   shiny::includeHTML('SVM.html') 
+  # })
   
   #seleccion de datos simulados
   a <- reactive({

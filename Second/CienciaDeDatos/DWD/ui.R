@@ -3,7 +3,10 @@
 #####   jose.ramirez@cimat.mx ######
 ####################################
 library(shinydashboard)
+library(shiny)
 library(plotly)
+library(knitr)
+library(rmarkdown) 
 #########################################
 # Construccion de la UI                 # 
 #########################################
@@ -12,7 +15,8 @@ sidebar <- dashboardSidebar(
   sidebarMenu(
     menuItem("CIMAT", tabName = "CIMAT", icon = icon("dashboard")),
     menuItem("DWD", icon = icon("th"), tabName = "DWD",
-             badgeLabel = "nuevo", badgeColor = "green")
+             badgeLabel = "nuevo", badgeColor = "green"),
+    menuItem("Optimizacion", icon = icon("th"), tabName = "Optimizacion")
   )
 )
 #cramos varias tabs
@@ -58,9 +62,27 @@ body <- dashboardBody(
                 h6('Los nuevos datos se espera que aparezcan fuera de este subespacio'),
             h6('En el contexto de microarreglos el interés recae en solo algunos subconjuntos de genes específicos y esta atención es más difícil de mantener solo con algunas combinaciones lineales (es decir cualquier base del subespacio generado por los datos) de lo genes considerados')
           ))
+    ),
+    #la tab de la derivacion
+    tabItem(tabName = "Optimizacion",  h2("Problema de optimización de DWD"),
+            fluidRow( h1('                        '),
+              box(width = 12, column(4), column(3,
+                      img(src='margen.png', align = "center", height = 400),
+                      column(4)
+              ))), hr(),
+            fluidRow( 
+              box( width = 12,   column(6, 
+                                        withMathJax(includeMarkdown("SVM.Rmd")) ),
+                      column(6) 
+                )
+            )
+                      
+              
+            )
+            
     )
   )
-)
+
 # Put them together into a dashboardPage
 dashboardPage(skin = "purple", 
   dashboardHeader(title = "CIMAT Monterrey"),
