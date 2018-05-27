@@ -64,18 +64,18 @@ body <- dashboardBody(
           ))
     ),
     #la tab de la derivacion
-    tabItem(tabName = "Optimizacion",  h2("Problema de optimización de DWD"),
-            fluidRow( h1('                        '),
-              box(width = 12, column(4), column(3,
-                      img(src='margen.png', align = "center", height = 400),
-                      column(4)
-              ))), hr(),
-            fluidRow( 
-              box( width = 12,   column(6, 
-                                        includeHTML("SVM.html")) ,
-                      column(6) 
-                )
-            )
+     tabItem(tabName = "Optimizacion",  h2("Problema de optimización de DWD"),
+             fluidRow( h1('                        '),
+               box(width = 12, column(4), column(3,
+                       img(src='margen.png', align = "center", height = 400),
+                       column(4)
+               ))), hr(),
+             fluidRow( 
+               box( width = 12,       column(6,  withMathJax(includeMarkdown(("SVM.Rmd")))) ,
+                   
+                       column(6, withMathJax(includeMarkdown(("planteamientoDWD.Rmd"))))
+                 )
+             )
                       
               
             )

@@ -2,20 +2,24 @@
 #####    J. Antonio Garcia #########
 #####   jose.ramirez@cimat.mx ######
 ####################################
-setwd('C:\\Users\\fou-f\\Desktop\\MCE\\Second\\CienciaDeDatos\\DWD')
+#setwd('/home/fou/Desktop/MCE_CIMAT/Second/CienciaDeDatos/DWD/')
 #########################################
 # Construccion de la primer ilustracion # 
 #########################################
 #generamos una muestra de dim 39 mormal multi y la guardamos
 n <- 20
-d <- 10
+d <- 1000
 set.seed(123)
 I <- diag(rep(1, d))
 library(MASS)
 pos <- as.data.frame(mvrnorm(n = n, mu = rep(2.2, d), Sigma = I))
 neg <- as.data.frame(mvrnorm(n = n, mu = rep(-2.2, d), Sigma = I))
-#saveRDS(pos, 'pos2000.RDS')
-#saveRDS(neg, 'neg2000.RDS')
+remove(I)
+save.image(file='datos.RData')
+#save(pos, file =  'pos1000.rdata')
+#save(neg, file =  'neg1000.rdata')
+#saveRDS(pos, 'pos1000.RDS')
+#saveRDS(neg, 'neg1000.RDS')
 stack <- rbind(pos,neg)
 pos.mean <- apply(pos, 2, mean)
 neg.mean <- apply(neg, 2, mean)

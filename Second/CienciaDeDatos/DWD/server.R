@@ -7,13 +7,13 @@ library(MASS)
 library(shiny)
 library(knitr)
 library(rmarkdown) 
+#setwd('/home/fou/Desktop/MCE_CIMAT/Second/CienciaDeDatos/DWD')
 #########################################
 # Construccion del backend              # 
 #########################################
 #lectura de datos simulados previamente
 n <- 20
-pos <- readRDS('pos2000.RDS')
-neg <- readRDS('neg2000.RDS')
+load('datos.RData')
 ####################################
 server <- function(input, output) {
   #############################markdown de SVM y DWD
