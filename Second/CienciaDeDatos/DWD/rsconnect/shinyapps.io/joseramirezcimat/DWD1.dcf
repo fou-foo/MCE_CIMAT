@@ -5,9 +5,9 @@ account: joseramirezcimat
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 349444
-bundleId: 1394815
+bundleId: 1395729
 url: https://joseramirezcimat.shinyapps.io/DWD1/
-when: 1527396523.92518
+when: 1527462050.96642
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: draft.R|graficas.R|.RData
