@@ -1,6 +1,8 @@
 setwd('C:/Users/fou-f/Desktop/MCE/Second/CienciaDeDatos/tarea1/ejercicio4')
 test <- read.table('oef.test')
 train <- read.table('oef.train')
+saveRDS(data,'data.rds')
+data <- rbind(test, train)
 library(caret)
 library(ripa)
 Constructor.evaluar.p <- function(p, train, test)
@@ -85,8 +87,11 @@ y_train <- train[,1]
 y_train <- factor(y_train)
 Y_train <- model.matrix(~y_train-1)
 train$V1 <- NULL
-pca <- princomp(train) #como los datos ya estan escalados en [-1, 1] uso la matriz de varianzas y covarianzas
+Y <- data$V1
+saveRDS(Y, 'Y_totales.Rds')
+pca <- princomp(data[,-1]) #como los datos ya estan escalados en [-1, 1] uso la matriz de varianzas y covarianzas
 z <- pca$loadings[,1:p]
+saveRDS(z,'dataParcial.rds')
 Z <- as.matrix(train) %*%z
 b <- lm(Y_train ~ . -1, data=as.data.frame(Z))
 B <- b$coefficients
