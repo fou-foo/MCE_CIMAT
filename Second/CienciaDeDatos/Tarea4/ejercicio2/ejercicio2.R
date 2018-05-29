@@ -6,12 +6,15 @@ data <- rbind(test,train)
 saveRDS(data, 'data.rds')
 ##############################################################33
 library(caret)
+library(plotly)
+library(ggplot2)
 library(ripa)
+library(parallel)
 set.seed(0)
 ################ control para las 10 k-folds ###########################33
 ###################33 eigenfaces ########################################
 # de la tarea 1 dije que usar 50 componentes era suficiente
-train.lm.cv <- function(cv, data)
+train.lm.cv <- function(cv=10, data)
 {
     #funcion para evaluar por cv lm
     set.seed(0)
@@ -114,6 +117,7 @@ train.QDA.cv <- function(cv = 10, data)
         acc.train[i] <- Matrix.C.train$overall['Accuracy']
         acc.test[i] <-  Matrix.C.test$overall['Accuracy']
     }
+    gc()
     return( list(train=acc.train, test =acc.test) )
 }
 error.qda <- train.QDA.cv(cv = 10, data)
@@ -143,13 +147,14 @@ train.NN <- function(cv=10, data)
         acc.train[i] <- Matrix.C.train$overall['Accuracy']
         acc.test[i] <-  Matrix.C.test$overall['Accuracy']
     }
+    gc()
     return( list(train=acc.train, test =acc.test) )
 }
 error.nn <- train.NN(cv = 10, data)
 error.nn <- as.data.frame(error.nn)
 error.nn$modelo <- 'nn'
 ################ vamor por el favorito de todos SVM###########################
-train.SVM <- function(cv = 10, data, C)
+train.SVM.init <- function(cv = 10, data, x)
 {
     library(e1071)
     set.seed(0)
@@ -157,25 +162,149 @@ train.SVM <- function(cv = 10, data, C)
     breaks <- c(seq(1, dim(data)[1], by = bloque  ), dim(data)[1])
     acc.train <- rep(0, cv)
     acc.test <- rep(0, cv)
-    for (i in 1:(length(breaks)-1))
-    {
-        indices <- breaks[i]:breaks[i+1]
-        test <- data[ indices,   ]
-        train <- data[ -indices,   ]
-        y_hat <- svm(factor(V1)  ~ ., data = data[-indices,], kernel='linear' ) #siguiendo la recomendación de hestie
-        y.ouput <-  predict(y_hat, data[-indices, ], type = 'class')
-        Matrix.C.train <- caret::confusionMatrix( factor(y.ouput), factor(data$V1[-indices])) #error de train
-        Y.test.hat <- predict(y_hat, data[indices,], type = 'class')
-        res2 <- Y.test.hat
-        Matrix.C.test <- caret::confusionMatrix( factor(res2), factor(data$V1[indices]))
-        acc.train[i] <- Matrix.C.train$overall['Accuracy']
-        acc.test[i] <-  Matrix.C.test$overall['Accuracy']
+    function(x){
+        for (i in 1:(length(breaks)-1))
+        {
+            indices <- breaks[i]:breaks[i+1]
+            test <- data[ indices,   ]
+            train <- data[ -indices,   ]
+            y_hat <- svm(factor(V1)  ~ ., data = data[-indices,], kernel='linear', cost = x ) #siguiendo la recomendación de hestie
+            y.ouput <-  predict(y_hat, data[-indices, ], type = 'class')
+            Matrix.C.train <- caret::confusionMatrix( factor(y.ouput), factor(data$V1[-indices])) #error de train
+            Y.test.hat <- predict(y_hat, data[indices,], type = 'class')
+            res2 <- Y.test.hat
+            Matrix.C.test <- caret::confusionMatrix( factor(res2), factor(data$V1[indices]))
+            acc.train[i] <- Matrix.C.train$overall['Accuracy']
+            acc.test[i] <-  Matrix.C.test$overall['Accuracy']
+        }
+        gc()
+        return( list(train=acc.train, test =acc.test) )
     }
-    return( list(train=acc.train, test =acc.test) )
 }
-error.SVM <- train.SVM(cv = 10, data)
-error.SVM <- as.data.frame(SVM)
+train.SVM <- train.SVM.init(cv = 10, data = data, x)
+error.SVM <- train.SVM(.1)#determinado por busqueda exaustiva en [.1, 20]
+error.SVM <- as.data.frame(error.SVM)
 error.SVM$modelo <- 'SVM'
-############################################3
-c.tuning <- seq(0.1, 20, length=15)
-mclapply(fun = train.SVM, red(data, 15), c.tuning)
+############################################  busqueda en grid del parametro C de SVM el mejor es .1
+# train.SVM <- train.SVM.init(cv = 10, data = data, x)
+# c.tuning <- seq(0.1, 20, length=15)
+# searh.grid.SVM <- mclapply(FUN = train.SVM,  X= c.tuning, mc.cores = (detectCores()-1))
+# searh.grid.SVM
+# z <- as.data.frame(searh.grid.SVM)
+# z2 <- as.data.frame(apply(z, 2, mean))
+# z.vis <- matrix(0, ncol = 2, nrow = 15)
+# impares <-  seq(1,dim(z2)[1], by = 2)
+# z.vis[,1 ] <- z2$`apply(z, 2, mean)`[impares]
+# z.vis[,2 ] <- z2$`apply(z, 2, mean)`[impares+1]
+# library(ggplot2)
+# z.vis <- as.data.frame(z.vis)
+# colnames(z.vis) <- c('Acc.Train', 'Acc.Test')
+# z.vis$Indice.Grid <- 1:length(c.tuning)
+#saveRDS(z.vis, file ='tuning_SVM.rds')
+z.vis <-readRDS(file='tuning_SVM.rds')
+p2 <- ggplot(z.vis, aes(x=Acc.Train, y=Acc.Test , color = factor(Indice.Grid)))+
+    geom_point() +  theme(legend.title = element_blank()) +theme_minimal() +
+    ggtitle('Precisión promedio por valor del grid (10-fold): SVM')
+p2 <- ggplotly(p2) #distro en bayes
+p2
+############# vamos por el arbol################################
+train.arbol.init <- function(cv = 10, data, grid)
+{
+    library(rpart)
+    set.seed(0)
+    bloque <- round(dim(data)[1]/cv)
+    breaks <- c(seq(1, dim(data)[1], by = bloque  ), dim(data)[1])
+    acc.train <- rep(0, cv)
+    acc.test <- rep(0, cv)
+    grid <- grid
+    function(x){
+        for (i in 1:(length(breaks)-1))
+        {
+            indices <- breaks[i]:breaks[i+1]
+            test <- data[ indices,   ]
+            train <- data[ -indices,   ]
+            y_hat <- rpart(factor(V1)  ~ ., data = data[-indices,], method='class', 
+                           control = rpart.control(cp = .01, minsplit= grid[x, 'minsplit' ],
+                                                   maxdepth=grid[x, 'maxdepth' ]))
+            y.ouput <-  predict(y_hat, data[-indices, ], type = 'class')
+            Matrix.C.train <- caret::confusionMatrix( factor(y.ouput), factor(data$V1[-indices])) #error de train
+            Y.test.hat <- predict(y_hat, data[indices,], type = 'class')
+            res2 <- Y.test.hat
+            Matrix.C.test <- caret::confusionMatrix( factor(res2), factor(data$V1[indices]))
+            acc.train[i] <- Matrix.C.train$overall['Accuracy']
+            acc.test[i] <-  Matrix.C.test$overall['Accuracy']
+        }
+        return( list(train=acc.train, test =acc.test) )
+    }
+}
+#tuning el arbol 
+grid <- data.frame(maxdepth = rep(1:15, each= 4), minsplit = rep((1:4)*5, 15))
+train.arbol <- train.arbol.init(cv = 10, data = data, grid = grid)
+searh.grid.SVM <- mclapply(FUN = train.arbol,  X= c.tuning, mc.cores = (detectCores()-1))
+error.arbol <- train.arbol(60) #resultado del tuning
+error.arbol <- as.data.frame(error.arbol)
+error.arbol$modelo <- 'arbol'
+#tuning el arbol 
+# grid <- data.frame(maxdepth = rep(1:15, each= 4), minsplit = rep((1:4)*5, 15))
+# train.arbol <- train.arbol.init(cv = 10, data = data, grid = grid)
+# searh.grid.arbol <- mclapply(FUN = train.arbol,  X= 1:dim(grid)[1], mc.cores = (detectCores()-1))
+# z <- as.data.frame(searh.grid.arbol)
+# z2 <- as.data.frame(apply(z, 2, mean))
+# z.vis <- matrix(0, ncol = 2, nrow = dim(grid)[1])
+# impares <-  seq(1,dim(z2)[1], by = 2)
+# z.vis[,1 ] <- z2$`apply(z, 2, mean)`[impares]
+# z.vis[,2 ] <- z2$`apply(z, 2, mean)`[impares+1]
+# library(ggplot2)
+# z.vis <- as.data.frame(z.vis)
+# colnames(z.vis) <- c('Acc.Train', 'Acc.Test')
+# z.vis$Indice.Grid <- 1:dim(grid)[1]
+#saveRDS(z.vis, file ='tuning_arbol.rds')
+readRDS(file='tuning_arbol.rds')
+p2 <- ggplot(z.vis, aes(x=Acc.Train, y=Acc.Test , color = factor(Indice.Grid)))+
+    geom_point() +  theme(legend.title = element_blank()) +theme_minimal() +
+    ggtitle('Precisión promedio por valor del grid (10-fold): Arboles ')
+p2 <- ggplotly(p2) #distro en bayes
+p2
+
+
+######################no  reutilizamos nuestra implementación de adaboost#################
+train.ada.init <- function(cv = 10, data, grid)
+{
+    set.seed(0)
+    library(adabag)
+    bloque <- round(dim(data)[1]/cv)
+    breaks <- c(seq(1, dim(data)[1], by = bloque  ), dim(data)[1])
+    acc.train <- rep(0, cv)
+    acc.test <- rep(0, cv)
+    grid <- grid
+    data$V1 <- factor(data$V1)
+    function(x){
+    indices <- sample(1:dim(data)[1], round(dim(data)[1]*.9))
+    y_hat <- boosting( V1~ ., data= data[-indices,], boos=FALSE, 
+                           coeflearn = 'Zhu', mfinal = grid[x, 'mfinal'], 
+                           control=rpart.control(
+                               maxdepth= grid[x, 'maxdepth'] , 
+                               minsplit = grid[x, 'minsplit' ], cp =0.01 ) ) 
+    
+    y.ouput <-  predict(y_hat, data[-indices, ], type = 'class')
+    Matrix.C.train <- caret::confusionMatrix( factor(y.ouput$class), factor(data$V1[-indices])) #error de train
+    Y.test.hat <- predict(y_hat, data[indices,], type = 'class')
+    res2 <- Y.test.hat
+    Matrix.C.test <- caret::confusionMatrix( factor(res2$class), factor(data$V1[indices]))
+    acc.train[x] <- Matrix.C.train$overall['Accuracy']
+    acc.test[x] <-  Matrix.C.test$overall['Accuracy']
+    gc()
+    return( list(train=acc.train, test =acc.test) )
+    }
+}
+grid.ada <- data.frame(minsplit = rep(seq(10, 50, by=5),  each = 15 ),
+                       maxdepth = rep(seq(10, 30, by =5 ), each =  27), 
+                       mfinal = rep(c(50, 200, 600), 45) )
+grid.ada <- unique(grid.ada)
+train.ada <- train.ada.init(cv = 10, data = data, grid = grid.ada)
+searh.grid.ada <- mclapply(FUN = train.ada,  X= 1:dim(grid.ada), mc.cores = (detectCores()-1))
+error.ada <- unlist(searh.grid.ada)
+gc()
+error.ada <- as.data.frame(error.ada)
+error.ada$modelo <- 'ada'
+##################el ada boost ######################################
