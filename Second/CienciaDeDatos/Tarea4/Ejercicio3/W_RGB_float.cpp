@@ -1,10 +1,10 @@
 #include <math.h>
 #include <cmath>
-//#include <RcppEigen.h>
 #include <RcppArmadillo.h>
 #include <iostream>
 #include <vector>
 #include <Eigen/Core>
+#include <RcppEigen.h>
 
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::depends(RcppEigen)]]

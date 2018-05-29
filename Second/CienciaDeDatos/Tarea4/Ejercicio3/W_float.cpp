@@ -43,7 +43,7 @@ Eigen::SparseMatrix<float> Kernel_float ( NumericMatrix M, int h, int w, double 
           d2 = (float)(pow(i-k,2)+pow(j-l,2));
           if(d2 <= vecindad)
           {
-            calculo = (float) (exp(-pow(M(j,i)-M(l,k),2)/(2*pow(sigJ,2))-d2/(2*pow(sigd,2))));
+            calculo = (float) (exp(-pow(M(j,i)-M(l,k),2)/(2*sigJ)));//-d2/(2*pow(sigd,2)));
             tripletList.push_back(T((j)*h+i, (l)*h+k, calculo ));
           }
         }

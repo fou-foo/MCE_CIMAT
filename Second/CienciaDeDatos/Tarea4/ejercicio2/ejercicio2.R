@@ -1,9 +1,9 @@
-###Lectura de datos y formación d eun solo dataset para hacer cv
+###Lectura de datos y formación d eun solo dataset para hacer cv: DATOS de DIGITOS 
 setwd('/home/fou/Desktop/MCE_CIMAT/Second/CienciaDeDatos/Tarea4/ejercicio2/')
 test <- read.table('oef.test')
 train <- read.table('oef.train')
 data <- rbind(test,train)
-saveRDS(data, 'data.rds')
+#saveRDS(data, 'data.rds')
 ##############################################################33
 library(caret)
 library(plotly)
@@ -259,7 +259,7 @@ error.arbol$modelo <- 'arbol'
 # colnames(z.vis) <- c('Acc.Train', 'Acc.Test')
 # z.vis$Indice.Grid <- 1:dim(grid)[1]
 #saveRDS(z.vis, file ='tuning_arbol.rds')
-readRDS(file='tuning_arbol.rds')
+z.vis <- readRDS(file='tuning_arbol.rds')
 p2 <- ggplot(z.vis, aes(x=Acc.Train, y=Acc.Test , color = factor(Indice.Grid)))+
     geom_point() +  theme(legend.title = element_blank()) +theme_minimal() +
     ggtitle('Precisión promedio por valor del grid (10-fold): Arboles ')
@@ -268,6 +268,7 @@ p2
 
 
 ######################no  reutilizamos nuestra implementación de adaboost#################
+set.seed(0)
 train.ada.init <- function(cv = 10, data, grid)
 {
     set.seed(0)
@@ -279,32 +280,57 @@ train.ada.init <- function(cv = 10, data, grid)
     grid <- grid
     data$V1 <- factor(data$V1)
     function(x){
-    indices <- sample(1:dim(data)[1], round(dim(data)[1]*.9))
-    y_hat <- boosting( V1~ ., data= data[-indices,], boos=FALSE, 
+        indices <- sample(1:dim(data)[1], round(dim(data)[1]*.9))
+        y_hat <- boosting( V1~ ., data= data[-indices,], boos=FALSE, 
                            coeflearn = 'Zhu', mfinal = grid[x, 'mfinal'], 
                            control=rpart.control(
                                maxdepth= grid[x, 'maxdepth'] , 
                                minsplit = grid[x, 'minsplit' ], cp =0.01 ) ) 
-    
-    y.ouput <-  predict(y_hat, data[-indices, ], type = 'class')
-    Matrix.C.train <- caret::confusionMatrix( factor(y.ouput$class), factor(data$V1[-indices])) #error de train
-    Y.test.hat <- predict(y_hat, data[indices,], type = 'class')
-    res2 <- Y.test.hat
-    Matrix.C.test <- caret::confusionMatrix( factor(res2$class), factor(data$V1[indices]))
-    acc.train[x] <- Matrix.C.train$overall['Accuracy']
-    acc.test[x] <-  Matrix.C.test$overall['Accuracy']
-    gc()
-    return( list(train=acc.train, test =acc.test) )
+        
+        y.ouput <-  predict(y_hat, data[-indices, ], type = 'class')
+        Matrix.C.train <- caret::confusionMatrix( factor(y.ouput$class), factor(data$V1[-indices])) #error de train
+        Y.test.hat <- predict(y_hat, data[indices,], type = 'class')
+        res2 <- Y.test.hat
+        Matrix.C.test <- caret::confusionMatrix( factor(res2$class), factor(data$V1[indices]))
+        acc.train[x] <- Matrix.C.train$overall['Accuracy']
+        acc.test[x] <-  Matrix.C.test$overall['Accuracy']
+        gc()
+        return( list(train=acc.train, test =acc.test) )
     }
 }
-grid.ada <- data.frame(minsplit = rep(seq(10, 50, by=5),  each = 15 ),
-                       maxdepth = rep(seq(10, 30, by =5 ), each =  27), 
-                       mfinal = rep(c(50, 200, 600), 45) )
+grid.ada <- data.frame(minsplit = rep(seq(5, 20, by=2),  each = 9 ),
+                       maxdepth = rep(seq(5,  15, by =5 ), each =  3), 
+                       mfinal = rep(c(50, 100, 500), 4) )
 grid.ada <- unique(grid.ada)
 train.ada <- train.ada.init(cv = 10, data = data, grid = grid.ada)
-searh.grid.ada <- mclapply(FUN = train.ada,  X= 1:dim(grid.ada), mc.cores = (detectCores()-1))
-error.ada <- unlist(searh.grid.ada)
-gc()
+error.ada <- train.ada(24) #determinado con busqueda en grid
 error.ada <- as.data.frame(error.ada)
 error.ada$modelo <- 'ada'
-##################el ada boost ######################################
+##################tuning de ada boost ######################################
+searh.grid.ada <- mclapply(FUN = train.ada,  X= 1:dim(grid.ada)[1], mc.cores = (detectCores()-1))
+o.2 <- searh.grid.ada
+o.3 <-o.2
+error.ada <- unlist(searh.grid.ada)
+#error.ada <- as.data.frame(error.ada)
+z <- matrix(-1, ncol = 2, nrow = 72)
+for(i in 1:length(o.2))
+{
+    foo1 <- o.2[[i]]$train
+    foo1[foo1==0] <- NA 
+    z[i, 1] <- mean(foo1, na.rm = TRUE)
+    foo1 <- o.2[[i]]$test
+    foo1[foo1==0] <- NA 
+    z[i, 2] <- mean(foo1, na.rm = TRUE)
+}
+z <- as.data.frame(z)
+names(z) <- c('Acc.Train', 'Acc.Test')
+z$Indice.Grid <- 1:72
+library(ggplot2)
+z.vis <- z
+#saveRDS(z.vis, file ='tuning_ada.rds')
+readRDS(file='tuning_ada.rds')
+p2 <- ggplot(z.vis, aes(x=Acc.Train, y=Acc.Test , color = factor(Indice.Grid)))+
+    geom_point() +  theme(legend.title = element_blank()) +theme_minimal() +
+    ggtitle('Precisión promedio por valor del grid (10-fold): Arboles ')
+p2 <- ggplotly(p2) #distro en bayes
+p2
